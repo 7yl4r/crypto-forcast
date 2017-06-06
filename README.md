@@ -15,6 +15,8 @@ The idea here is pretty simple:
 ## ingest
 Hmm... what data to ingest... How about:
 1. historical self-values (eg autoregression)
+    1. http://api.bitcoincharts.com/v1/csv/
+    2. more suggestions on [this SO answer](https://stackoverflow.com/questions/16143266/get-bitcoin-historical-data)
 2. historical values of other crypto-currencies (CCF might be useful here if one lags the other)
 3. [google trends data](https://trends.google.com/trends/explore?q=bitcoin,litecoin,ethereum) using
     1. [pytrends](https://github.com/GeneralMills/pytrends)
@@ -39,4 +41,4 @@ Time series models... For these I like:
 2. Fuzzy Time Series Predictions
     1. [asiviero](https://github.com/asiviero/fuzzy_time_series_predictor)
 3. good ol' fashioned autoregressors
-    1. my old [behavAR](https://github.com/7yl4r/BehavAR) project 
+    1. my old [behavAR](https://github.com/7yl4r/BehavAR) project

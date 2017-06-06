@@ -10,10 +10,15 @@ import matplotlib.pyplot as plt
 import statsmodels.api as sm
 
 from statsmodels.graphics.api import qqplot
+import datetime
 
 FIG_DIR = 'results/'
 
+def dateparse (time_in_secs):
+    return datetime.datetime.fromtimestamp(float(time_in_secs))
+
 def loadSampleData():
+    """ loads sample pandas dataframe of sunspot data"""
     print(sm.datasets.sunspots.NOTE)
 
     dta = sm.datasets.sunspots.load_pandas().data
@@ -27,6 +32,24 @@ def loadSampleData():
     # plt.show()
 
     return dta
+
+def loadSampledata2():
+    """
+    loads sample pandas dataframe of data from csv
+    csv files can be ingested from http://api.bitcoincharts.com/v1/csv/
+        these are updated twice daily
+    """
+    dta = pandas.read_csv(
+        'data/coinbaseUSD_sample.csv', usecols=[0,1], index_col=0,
+        parse_dates=True, date_parser=dateparse,
+        names=['DateTime', 'price']
+    )
+    dta.plot(figsize=(12,8))
+
+    plt.savefig(FIG_DIR+'dataView.png', bbox_inches='tight')
+
+    return dta
+
 
 def plotACFAndPACF(dta, saveFigName=None):
     fig = plt.figure(figsize=(12,8))
@@ -114,7 +137,18 @@ def testModelFit(arma_mod30, dta):
 
 
 def testDynamicPrediction(arma_mod30, dta):
-    predict_sunspots = arma_mod30.predict('1990', '2012', dynamic=True)
+    # predict_sunspots = arma_mod30.predict('1990', '2012', dynamic=True)  # for sunspot data
+    print('last date: ', dta.index[-1])
+    _start = dta.index[-1] - datetime.timedelta(minutes=5)
+    _end = dta.index[-1] + datetime.timedelta(minutes=1)
+    start = dta.index.get_loc(_start, method='nearest')
+    end = dta.index.get_loc(_end, method='nearest')
+    print('predict from', start, ' to ', end)
+    predict_sunspots = arma_mod30.predict(
+        start,
+        end,
+        dynamic=True
+    )  # for btc price data
     print(predict_sunspots)
 
     ax = dta.ix['1950':].plot(figsize=(12,8))
@@ -131,7 +165,7 @@ def testDynamicPrediction(arma_mod30, dta):
     print ('mean forcast err: ' + str(mf_err))
 
 if __name__ == '__main__':
-    dta = loadSampleData()
+    dta = loadSampledata2()
     plotACFAndPACF(dta, 'acf_and_pacf.png')
     arma_mod30 = fitModel(dta)
     testModelFit(arma_mod30, dta)
