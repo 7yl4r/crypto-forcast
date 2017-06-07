@@ -14,21 +14,21 @@ from GroupByTimeStamp import GroupByTimeStamp
 def dateparse (time_in_secs):
     return datetime.datetime.fromtimestamp(float(time_in_secs))
 
-class PlotRawData(luigi.Task):
+class Resample(luigi.Task):
 
     def requires(self):
         return [GroupByTimeStamp()]
 
     def output(self):
-        return luigi.LocalTarget(config.plot_dir+"data.png")
+        return luigi.LocalTarget(config.data_dir+"coinbaseUSD_sampled.pickle")
 
     def run(self):
-        print("\nsaving plot to ", self.output().path, "...\n")
+        print("\ndownsampling to f=1Hz...\n")
         dta = pandas.read_csv(
             self.input()[0].path, usecols=[0,1], index_col=0,
             parse_dates=True, date_parser=dateparse,
             names=['DateTime', 'price']
         )
-        dta.plot(figsize=config.fig_size)
+        dta.resample('1T').mean()
 
-        plt.savefig(self.output().path, bbox_inches='tight')
+        dta.to_pickle(self.output().path)
