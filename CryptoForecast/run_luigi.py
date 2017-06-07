@@ -9,6 +9,7 @@ import config
 from IngestPrices import IngestPrices
 from DecompressPrices import DecompressPrices
 from GroupByTimeStamp import GroupByTimeStamp
+from PlotRawData import PlotRawData
 
 if __name__ == '__main__':
     luigi.run()

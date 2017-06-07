@@ -20,24 +20,6 @@ FIG_DIR = 'results/'
 FIG_SIZE= (12, 8)
 BINSIZE = 30 # in minutes
 
-def dateparse (time_in_secs):
-    return datetime.datetime.fromtimestamp(float(time_in_secs))
-
-def loadSampleData():
-    """ loads sample pandas dataframe of sunspot data"""
-    print(sm.datasets.sunspots.NOTE)
-
-    dta = sm.datasets.sunspots.load_pandas().data
-
-    dta.index = pandas.Index(sm.tsa.datetools.dates_from_range('1700', '2008'))
-    del dta["YEAR"]
-
-    dta.plot(figsize=FIG_SIZE)
-
-    plt.savefig(FIG_DIR+'dataView.png', bbox_inches='tight')
-    # plt.show()
-
-    return dta
 
 def loadSampledata2():
     """
@@ -51,16 +33,8 @@ def loadSampledata2():
         names=['DateTime', 'price']
     )
 
-    # average duplicate indexes
-    # NOTE: weighted average using col 2 (trade volume) would be better...
-    dta = dta.groupby('DateTime').mean()
-
-    dta.plot(figsize=FIG_SIZE)
-
     # downsample using mean
     dta.resample(str(BINSIZE)+'T').mean()
-
-    plt.savefig(FIG_DIR+'dataView.png', bbox_inches='tight')
 
     return dta
 
