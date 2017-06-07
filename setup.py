@@ -70,7 +70,8 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         'statsmodels',
-        'matplotlib'
+        'matplotlib',
+        'luigi'
     ],
 
     # List additional groups of dependencies here (e.g. development

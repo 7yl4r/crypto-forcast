@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# NOTE: this file is being ported to luigi jobs;
+# NOTE: DO NOT TRY TO USE THIS!
+#       this file is being ported into luigi tasks;
 #       please see the main luigi file run_luigi.py
+
 # re-creation of
 #   http://statsmodels.sourceforge.net/devel/examples/notebooks/generated/tsa_arma.html
 
@@ -19,25 +21,6 @@ import datetime
 FIG_DIR = 'results/'
 FIG_SIZE= (12, 8)
 BINSIZE = 30 # in minutes
-
-
-def loadSampledata2():
-    """
-    loads sample pandas dataframe of data from csv
-    csv files can be ingested from http://api.bitcoincharts.com/v1/csv/
-        these are updated twice daily
-    """
-    dta = pandas.read_csv(
-        'data/coinbaseUSD_sample.csv', usecols=[0,1], index_col=0,
-        parse_dates=True, date_parser=dateparse,
-        names=['DateTime', 'price']
-    )
-
-    # downsample using mean
-    dta.resample(str(BINSIZE)+'T').mean()
-
-    return dta
-
 
 def plotACFAndPACF(dta, saveFigName=None):
     LAGS = 60/BINSIZE*24*8 # 8 days no matter what binsize is
