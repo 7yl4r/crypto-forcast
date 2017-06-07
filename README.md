@@ -42,3 +42,5 @@ Time series models... For these I like:
     1. [asiviero](https://github.com/asiviero/fuzzy_time_series_predictor)
 3. good ol' fashioned autoregressors
     1. my old [behavAR](https://github.com/7yl4r/BehavAR) project
+        1. also see [this script](https://github.com/PIELab/interventionViz/blob/master/behavARX.py)
+4. frequency analysis
