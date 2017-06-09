@@ -27,8 +27,8 @@ class PlotTrendsAndPrice(luigi.Task):
         return luigi.LocalTarget(config.plot_dir+"trends.png")
 
     def run(self):
-        trends_dta = pandas.read_pickle(self.input()[0].path)
-        price_dta = pandas.read_pickle(self.input()[1].path)
+        trends_dta = pandas.read_csv(self.input()[0].path)
+        price_dta = pandas.read_csv(self.input()[1].path)
         ax = trends_dta.plot(figsize=config.fig_size)
         price_dta.plot(ax=ax, figsize=config.fig_size)
 

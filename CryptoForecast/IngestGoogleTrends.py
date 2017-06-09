@@ -15,7 +15,7 @@ class IngestGoogleTrends(luigi.Task):
         return []
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir+"bitcoin_trends.df.pickle")
+        return luigi.LocalTarget(config.data_dir+"bitcoin_trends.csv")
 
     def run(self):
         path = ""
@@ -32,4 +32,4 @@ class IngestGoogleTrends(luigi.Task):
         # print(interest_over_time_df)
         print("\nsaving plot to ", self.output().path, "...\n")
 
-        interest_over_time_df.to_pickle(self.output().path)
+        interest_over_time_df.to_csv(self.output().path)

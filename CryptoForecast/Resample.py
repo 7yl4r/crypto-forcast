@@ -15,20 +15,21 @@ def dateparse (time_in_secs):
     return datetime.datetime.fromtimestamp(float(time_in_secs))
 
 class Resample(luigi.Task):
+    frequency_str = "D"  # f = 1 / 1 day
 
     def requires(self):
         return [GroupByTimeStamp()]
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir+"coinbaseUSD_sampled.df.pickle")
+        return luigi.LocalTarget(config.data_dir+"coinbaseUSD_sampled.csv")
 
     def run(self):
-        print("\ndownsampling to f=1Hz...\n")
+        print("\ndownsampling to f=1/(" + self.frequency_str + ")...\n")
         dta = pandas.read_csv(
             self.input()[0].path, usecols=[0,1], index_col=0,
             parse_dates=True, date_parser=dateparse,
             names=['DateTime', 'price']
         )
-        dta.resample('1T').mean()
+        daily_df = dta.resample(self.frequency_str).mean()
 
-        dta.to_pickle(self.output().path)
+        daily_df.to_csv(self.output().path)
