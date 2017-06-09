@@ -22,6 +22,7 @@ from PlotRawData import PlotRawData  # this plots grouped price data
 from Resample import Resample
 
 from IngestGoogleTrends import IngestGoogleTrends
+from PlotTrendsAndPrice import PlotTrendsAndPrice
 
 if __name__ == '__main__':
     luigi.run()

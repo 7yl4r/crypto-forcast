@@ -18,16 +18,18 @@ class IngestGoogleTrends(luigi.Task):
         return luigi.LocalTarget(config.data_dir+"bitcoin_trends.df.pickle")
 
     def run(self):
-        with self.output().open('w') as f:
-            path = ""
+        path = ""
 
-            # Login to Google. Only need to run this once, the rest of requests will use the same session.
-            pytrend = TrendReq(google_username, google_password, custom_useragent='crypto-forecast ingest script')
+        # Login to Google. Only need to run this once, the rest of requests will use the same session.
+        pytrend = TrendReq(google_username, google_password, custom_useragent='crypto-forecast ingest script')
 
-            # Create payload and capture API tokens. Only needed for interest_over_time(), interest_by_region() & related_queries()
-            pytrend.build_payload(kw_list=['bitcoin'])
+        # Create payload and capture API tokens. Only needed for interest_over_time(), interest_by_region() & related_queries()
+        pytrend.build_payload(kw_list=['bitcoin'])
 
-            # Interest Over Time
-            interest_over_time_df = pytrend.interest_over_time()
+        # Interest Over Time
+        interest_over_time_df = pytrend.interest_over_time()
 
-            interest_over_time_df.to_pickle(self.output().path)
+        # print(interest_over_time_df)
+        print("\nsaving plot to ", self.output().path, "...\n")
+
+        interest_over_time_df.to_pickle(self.output().path)
