@@ -1,5 +1,5 @@
 """
-reads in data from ingest sources (in configuration files?)
+reads in bitcoin price data from ingest source
 """
 
 import luigi

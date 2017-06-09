@@ -20,7 +20,7 @@ class Resample(luigi.Task):
         return [GroupByTimeStamp()]
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir+"coinbaseUSD_sampled.pickle")
+        return luigi.LocalTarget(config.data_dir+"coinbaseUSD_sampled.df.pickle")
 
     def run(self):
         print("\ndownsampling to f=1Hz...\n")

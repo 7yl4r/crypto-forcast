@@ -18,8 +18,10 @@ import config
 from IngestPrices import IngestPrices
 from DecompressPrices import DecompressPrices
 from GroupByTimeStamp import GroupByTimeStamp
-from PlotRawData import PlotRawData
+from PlotRawData import PlotRawData  # this plots grouped price data
 from Resample import Resample
+
+from IngestGoogleTrends import IngestGoogleTrends
 
 if __name__ == '__main__':
     luigi.run()

@@ -71,7 +71,8 @@ setup(
     install_requires=[
         'statsmodels',
         'matplotlib',
-        'luigi'
+        'luigi',
+        'pytrends'
     ],
 
     # List additional groups of dependencies here (e.g. development
