@@ -14,16 +14,20 @@ import luigi
 
 import config
 
-# Task Classes:
+# === Task Classes:
+# ingest
 from IngestPrices import IngestPrices
+from IngestGoogleTrends import IngestGoogleTrends
+
+# preprocess
 from DecompressPrices import DecompressPrices
 from GroupByTimeStamp import GroupByTimeStamp
-from PlotRawData import PlotRawData  # this plots grouped price data
 from Resample import Resample
-from CCF_Trends2Price import CCF_Trends2Price
 
-from IngestGoogleTrends import IngestGoogleTrends
-from PlotTrendsAndPrice import PlotTrendsAndPrice
+# visualization
+from vizualize.PlotRawData import PlotRawData  # this plots grouped price data
+from vizualize.PlotTrendsAndPrice import PlotTrendsAndPrice
+from vizualize.CCF_Trends2Price import CCF_Trends2Price
 
 if __name__ == '__main__':
     luigi.run()
