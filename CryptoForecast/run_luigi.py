@@ -29,5 +29,8 @@ from vizualize.PlotRawData import PlotRawData  # this plots grouped price data
 from vizualize.PlotTrendsAndPrice import PlotTrendsAndPrice
 from vizualize.CCF_Trends2Price import CCF_Trends2Price
 
+# model
+from model.ARIMAX_Trends2Price import ARIMAX_Trends2Price
+
 if __name__ == '__main__':
     luigi.run()

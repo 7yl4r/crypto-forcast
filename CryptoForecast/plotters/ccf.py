@@ -32,24 +32,3 @@ def plotCCF(dta, exog, saveFigPath, **kwargs):
         plt.show()
     else:
         plt.savefig(str(saveFigPath), bbox_inches='tight')
-
-def plotACFAndPACF(dta, saveFigPath=None):
-    fig = plt.figure(figsize=(12,8))
-    ax1 = fig.add_subplot(211)
-    # squeeze = Remove single-dimensional entries from the shape of an array.
-    # Plots lags on the horizontal and the correlations on vertical axis
-    ax1.set_ylabel('correlation')
-    ax1.set_xlabel('lag')
-    fig = sm.graphics.tsa.plot_acf(dta.values.squeeze(), lags=40, ax=ax1)
-
-    # partial act
-    # Plots lags on the horizontal and the correlations on vertical axis
-    ax2 = fig.add_subplot(212)
-    ax1.set_ylabel('correlation')
-    ax1.set_xlabel('lag')
-    fig = sm.graphics.tsa.plot_pacf(dta, lags=40, ax=ax2)
-
-    if (saveFigPath==None):
-        plt.show()
-    else:
-        plt.savefig(str(saveFigPath), bbox_inches='tight')

@@ -33,12 +33,6 @@ class CCF_Trends2Price(luigi.Task):
             right=price_dta, right_on='date'
         )
 
-        print( merged_inner )
-
-        # what's the size of the output data?
-        merged_inner.shape
-        merged_inner
-
         plotCCF(
             merged_inner['price'].astype('float64') ,
             merged_inner['trends'].astype('float64'),
