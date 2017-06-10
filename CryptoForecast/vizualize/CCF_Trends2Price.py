@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 import config
 from IngestGoogleTrends import IngestGoogleTrends
-from Resample import Resample
+from preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 from plotters.ccf import plotCCF
 
 
@@ -18,7 +18,7 @@ class CCF_Trends2Price(luigi.Task):
     def requires(self):
         return [
             IngestGoogleTrends(),
-            Resample()
+            Resample2DailyInterpolated()
         ]
 
     def output(self):

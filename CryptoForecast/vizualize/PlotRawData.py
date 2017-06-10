@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import datetime
 
 import config
-from GroupByTimeStamp import GroupByTimeStamp
+from preprocess.GroupByTimeStamp import GroupByTimeStamp
 
 def dateparse (time_in_secs):
     return datetime.datetime.fromtimestamp(float(time_in_secs))

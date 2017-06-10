@@ -5,7 +5,7 @@ samples with timestamps close enough get summarized
 import luigi
 
 import config
-from DecompressPrices import DecompressPrices
+from preprocess.DecompressPrices import DecompressPrices
 
 class GroupByTimeStamp(luigi.Task):
 

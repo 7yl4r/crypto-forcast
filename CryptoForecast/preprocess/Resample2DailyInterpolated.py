@@ -1,5 +1,5 @@
 """
-creates plot of raw data
+resamples price data to set frequency & cleverly interpolates NaN prices
 """
 
 import luigi
@@ -9,12 +9,12 @@ import matplotlib.pyplot as plt
 import datetime
 
 import config
-from GroupByTimeStamp import GroupByTimeStamp
+from preprocess.GroupByTimeStamp import GroupByTimeStamp
 
 def dateparse (time_in_secs):
     return datetime.datetime.fromtimestamp(float(time_in_secs))
 
-class Resample(luigi.Task):
+class Resample2DailyInterpolated(luigi.Task):
     frequency_str = "D"  # f = 1 / 1 day
 
     def requires(self):
@@ -31,5 +31,5 @@ class Resample(luigi.Task):
             names=['DateTime', 'price']
         )
         daily_df = dta.resample(self.frequency_str).mean()
-
+        daily_df = daily_df.interpolate(method='linear', axis=1).ffill().bfill()
         daily_df.to_csv(self.output().path)

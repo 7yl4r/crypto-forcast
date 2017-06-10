@@ -20,9 +20,9 @@ from IngestPrices import IngestPrices
 from IngestGoogleTrends import IngestGoogleTrends
 
 # preprocess
-from DecompressPrices import DecompressPrices
-from GroupByTimeStamp import GroupByTimeStamp
-from Resample import Resample
+from preprocess.DecompressPrices import DecompressPrices
+from preprocess.GroupByTimeStamp import GroupByTimeStamp
+from preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 
 # visualization
 from vizualize.PlotRawData import PlotRawData  # this plots grouped price data

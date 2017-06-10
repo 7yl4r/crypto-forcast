@@ -10,7 +10,7 @@ import datetime
 
 import config
 from IngestGoogleTrends import IngestGoogleTrends
-from Resample import Resample
+from preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 
 def dateparse (time_in_secs):
     return datetime.datetime.fromtimestamp(float(time_in_secs))
@@ -20,7 +20,7 @@ class PlotTrendsAndPrice(luigi.Task):
     def requires(self):
         return [
             IngestGoogleTrends(),
-            Resample()
+            Resample2DailyInterpolated()
         ]
 
     def output(self):
