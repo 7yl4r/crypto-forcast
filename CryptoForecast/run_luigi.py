@@ -20,6 +20,7 @@ from DecompressPrices import DecompressPrices
 from GroupByTimeStamp import GroupByTimeStamp
 from PlotRawData import PlotRawData  # this plots grouped price data
 from Resample import Resample
+from CCF_Trends2Price import CCF_Trends2Price
 
 from IngestGoogleTrends import IngestGoogleTrends
 from PlotTrendsAndPrice import PlotTrendsAndPrice

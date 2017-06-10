@@ -22,8 +22,12 @@ Hmm... what data to ingest... How about:
     1. [pytrends](https://github.com/GeneralMills/pytrends)
     2. [unofficial trends api](https://github.com/suryasev/unofficial-google-trends-api)
     3. [trends csv downloader](https://github.com/pedrofaustino/google-trends-csv-downloader)
-4. social media? news? idk.
-5. other markets historical data?
+4. sentiment analysis
+    1. [twitter ingest](https://stackoverflow.com/questions/21579999/count-number-of-results-for-a-particular-word-on-twitter-api-v1-1) (NLP sold separately)
+    2. 
+
+## pre-processing
+1. USD values could be adjusted using [CPI values](http://www.usinflationcalculator.com/inflation/consumer-price-index-and-annual-percent-changes-from-1913-to-2008/) from [bls.gov data](https://download.bls.gov/pub/time.series/cu/)
 
 ## Modeling
 Time series models... For these I like:

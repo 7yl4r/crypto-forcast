@@ -43,5 +43,3 @@ class PlotTrendsAndPrice(luigi.Task):
 
         print("\nsaving plot to ", self.output().path, "...\n")
         plt.savefig(self.output().path, bbox_inches='tight')
-
-        # TODO: also plot price on here from Resample or GroupByTimeStamp
