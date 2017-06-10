@@ -25,8 +25,8 @@ class CCF_Trends2Price(luigi.Task):
         return luigi.LocalTarget(config.plot_dir+"CCF_trends2price.png")
 
     def run(self):
-        trends_dta = pandas.read_csv(self.input()[0].path, names=['date','trends'])
-        price_dta  = pandas.read_csv(self.input()[1].path, names=['date','price'])
+        trends_dta = pandas.read_csv(self.input()[0].path, names=['date','trends'], header=None)
+        price_dta  = pandas.read_csv(self.input()[1].path, names=['date','price'], header=None)
 
         merged_inner = pandas.merge(
             left=trends_dta, left_on='date',
@@ -39,4 +39,8 @@ class CCF_Trends2Price(luigi.Task):
         merged_inner.shape
         merged_inner
 
-        plotCCF(merged_inner['price'], merged_inner['trends'], self.output().path)
+        plotCCF(
+            merged_inner['price'].astype('float64') ,
+            merged_inner['trends'].astype('float64'),
+            self.output().path
+        )

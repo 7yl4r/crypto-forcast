@@ -5,7 +5,7 @@ cross-correlations and partial cross-correlations
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 
-def plotCCF(dta, exog, saveFigName, **kwargs):
+def plotCCF(dta, exog, saveFigPath, **kwargs):
     zoomLagView = 120   # max lag of interest (for zoomed view)
 
     kwargs.setdefault('marker', 'o')
@@ -28,12 +28,12 @@ def plotCCF(dta, exog, saveFigName, **kwargs):
     ax2=fig.add_subplot(212)
     ax2.plot(range(1,zoomLagView+1), ccf_x[:zoomLagView], **kwargs)
 
-    if (saveFigName==None):
+    if (saveFigPath==None):
         plt.show()
     else:
-        plt.savefig(FIG_DIR+str(saveFigName), bbox_inches='tight')
+        plt.savefig(str(saveFigPath), bbox_inches='tight')
 
-def plotACFAndPACF(dta, saveFigName=None):
+def plotACFAndPACF(dta, saveFigPath=None):
     fig = plt.figure(figsize=(12,8))
     ax1 = fig.add_subplot(211)
     # squeeze = Remove single-dimensional entries from the shape of an array.
@@ -49,7 +49,7 @@ def plotACFAndPACF(dta, saveFigName=None):
     ax1.set_xlabel('lag')
     fig = sm.graphics.tsa.plot_pacf(dta, lags=40, ax=ax2)
 
-    if (saveFigName==None):
+    if (saveFigPath==None):
         plt.show()
     else:
-        plt.savefig(FIG_DIR+str(saveFigName), bbox_inches='tight')
+        plt.savefig(str(saveFigPath), bbox_inches='tight')
