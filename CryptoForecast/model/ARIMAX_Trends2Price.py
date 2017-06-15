@@ -8,6 +8,11 @@ import pandas
 import matplotlib.pyplot as plt
 import pickle
 
+import statsmodels.api as sm
+from scipy import stats
+from statsmodels.graphics.api import qqplot
+import numpy as np
+
 import config
 from IngestGoogleTrends import IngestGoogleTrends
 from preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
@@ -51,14 +56,15 @@ class ARIMAX_Trends2Price(luigi.Task):
         print('AIC, BIC, HQIC:')
         print(model.aic, model.bic, model.hqic)
 
-        pickle.dump(model, self.output().path)
+        with open(self.output().path, 'wb') as outfile:
+            pickle.dump(model, outfile)
 
-        # TODO:
-        testModelFit(model, ???, ???)
-        testDynamicPrediction(model, ???, ???, ???)
+        # TODO: use self.output() for these figures too
+        testModelFit(model, price_dta)
+        testDynamicPrediction(model, price_dta, trends_dta)
 
 
-def testModelFit(arma_mod30, dta, pid):
+def testModelFit(arma_mod30, dta):
     # does our model fit the theory?
     residuals = arma_mod30.resid
     sm.stats.durbin_watson(residuals.values)
@@ -76,7 +82,7 @@ def testModelFit(arma_mod30, dta, pid):
     ax = fig.add_subplot(111)
     ax = arma_mod30.resid.plot(ax=ax);
 
-    plt.savefig(FIG_DIR+'residualsVsTime'+str(pid)+'.png', bbox_inches='tight')
+    plt.savefig(config.plot_dir + 'ARIMAX_test_residualsVsTime.png', bbox_inches='tight')
     #    plt.show()
     # tests if samples are different from normal dist.
     k2, p = stats.normaltest(residuals)
@@ -93,10 +99,10 @@ def testModelFit(arma_mod30, dta, pid):
     # resid_std = (resid_dev - resid_dev.mean()) / resid_dev.std()
     plt.hist(residuals, bins=25);
     plt.title('Histogram of standardized deviance residuals');
-    plt.savefig(FIG_DIR+'residualsNormality'+str(pid)+'.png', bbox_inches='tight')
+    plt.savefig(config.plot_dir + 'ARIMAX_test_residualsNormality.png', bbox_inches='tight')
 
     # plot ACF/PACF for residuals
-    plotACFAndPACF(residuals, 'residualsACFAndPACF'+str(pid)+'.png')
+    plotACFAndPACF(residuals, 'residualsACFAndPACF.png')
 
     r,q,p = sm.tsa.acf(residuals.values.squeeze(), qstat=True)
     data = np.c_[range(1,41), r[1:], q, p]
@@ -105,9 +111,12 @@ def testModelFit(arma_mod30, dta, pid):
 
     # sample data indicates a lack of fit.
 
-def testDynamicPrediction(arma_mod30, dta, interven, pid):
+def testDynamicPrediction(arma_mod30, dta, interven):
     tf = len(dta)
     t0 = tf*2/3
+
+    print(interven)
+    
     predict_sunspots = arma_mod30.predict(t0, tf, exog=interven, dynamic=True)
     # print predict_sunspots
 
@@ -115,7 +124,7 @@ def testDynamicPrediction(arma_mod30, dta, interven, pid):
     ax = predict_sunspots.plot(ax=ax, style='r--', label='Dynamic Prediction');
     ax.legend();
     # ax.axis((-20.0, 38.0, -4.0, 200.0));
-    plt.savefig(FIG_DIR+'dynamicPrediction'+str(pid)+'.png', bbox_inches='tight')
+    plt.savefig(config.plot_dir + 'ARIMAX_test_dynamicPrediction.png', bbox_inches='tight')
 
     def mean_forecast_err(y, yhat):
         return y.sub(yhat).mean()
@@ -123,3 +132,25 @@ def testDynamicPrediction(arma_mod30, dta, interven, pid):
     # mf_err = mean_forecast_err(dta.SUNACTIVITY, predict_sunspots)
 
     # print ('mean forcast err: ' + str(mf_err))
+
+
+def plotACFAndPACF(dta, saveFigName=None):
+    fig = plt.figure(figsize=(12,8))
+    ax1 = fig.add_subplot(211)
+    # squeeze = Remove single-dimensional entries from the shape of an array.
+    # Plots lags on the horizontal and the correlations on vertical axis
+    ax1.set_ylabel('correlation')
+    ax1.set_xlabel('lag')
+    fig = sm.graphics.tsa.plot_acf(dta.values.squeeze(), lags=40, ax=ax1)
+
+    # partial act
+    # Plots lags on the horizontal and the correlations on vertical axis
+    ax2 = fig.add_subplot(212)
+    ax1.set_ylabel('correlation')
+    ax1.set_xlabel('lag')
+    fig = sm.graphics.tsa.plot_pacf(dta, lags=40, ax=ax2)
+
+    if (saveFigName==None):
+        plt.show()
+    else:
+        plt.savefig(config.plot_dir+str(saveFigName), bbox_inches='tight')
