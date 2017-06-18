@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import datetime
 
 import config
-from IngestGoogleTrends import IngestGoogleTrends
+from preprocess.TrendsInterpolation import TrendsInterpolation
 from preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 
 def dateparse (time_in_secs):
@@ -19,7 +19,7 @@ class PlotTrendsAndPrice(luigi.Task):
 
     def requires(self):
         return [
-            IngestGoogleTrends(),
+            TrendsInterpolation(),
             Resample2DailyInterpolated()
         ]
 

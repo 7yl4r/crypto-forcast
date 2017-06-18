@@ -2,6 +2,7 @@ CryptoForecast/secrets.py
 
 data/
 results/
+testData/sandbox
 virtualEnv/
 
 *.pyc

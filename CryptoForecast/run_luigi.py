@@ -24,6 +24,8 @@ from preprocess.DecompressPrices import DecompressPrices
 from preprocess.GroupByTimeStamp import GroupByTimeStamp
 from preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 
+from preprocess.TrendsInterpolation import TrendsInterpolation
+
 # visualization
 from vizualize.PlotRawData import PlotRawData  # this plots grouped price data
 from vizualize.PlotTrendsAndPrice import PlotTrendsAndPrice

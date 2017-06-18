@@ -8,7 +8,7 @@ import pandas
 import matplotlib.pyplot as plt
 
 import config
-from IngestGoogleTrends import IngestGoogleTrends
+from preprocess.TrendsInterpolation import TrendsInterpolation
 from preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 from plotters.ccf import plotCCF
 
@@ -17,7 +17,7 @@ class CCF_Trends2Price(luigi.Task):
 
     def requires(self):
         return [
-            IngestGoogleTrends(),
+            TrendsInterpolation(),
             Resample2DailyInterpolated()
         ]
 
@@ -25,8 +25,8 @@ class CCF_Trends2Price(luigi.Task):
         return luigi.LocalTarget(config.plot_dir+"CCF_trends2price.png")
 
     def run(self):
-        trends_dta = pandas.read_csv(self.input()[0].path, names=['date','trends'], header=None)
-        price_dta  = pandas.read_csv(self.input()[1].path, names=['date','price'], header=None)
+        trends_dta = pandas.read_csv(self.input()[0].path, names=['date','trends'], header=0)
+        price_dta  = pandas.read_csv(self.input()[1].path, names=['date','price'], header=0)
 
         merged_inner = pandas.merge(
             left=trends_dta, left_on='date',

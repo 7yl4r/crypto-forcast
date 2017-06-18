@@ -14,7 +14,7 @@ from statsmodels.graphics.api import qqplot
 import numpy as np
 
 import config
-from IngestGoogleTrends import IngestGoogleTrends
+from preprocess.TrendsInterpolation import TrendsInterpolation
 from preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 from model.models import fitARIMAX
 
@@ -23,7 +23,7 @@ class ARIMAX_Trends2Price(luigi.Task):
 
     def requires(self):
         return [
-            IngestGoogleTrends(),
+            TrendsInterpolation(),
             Resample2DailyInterpolated()
         ]
 
