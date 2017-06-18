@@ -28,5 +28,5 @@ class TrendsInterpolation(luigi.Task):
             names=['DateTime', 'bitcoin'], header=0
         )
         daily_df = dta.resample(self.frequency_str).mean()
-        daily_df = daily_df.interpolate(method='linear', axis=1).ffill().bfill()
+        daily_df = daily_df.interpolate(method='linear')
         daily_df.to_csv(self.output().path)
