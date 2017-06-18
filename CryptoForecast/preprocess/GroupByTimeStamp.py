@@ -1,5 +1,5 @@
 """
-samples with timestamps close enough get summarized
+samples price data with timestamps close enough get summarized
 """
 
 import luigi

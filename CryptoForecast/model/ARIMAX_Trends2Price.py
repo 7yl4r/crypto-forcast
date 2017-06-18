@@ -28,21 +28,26 @@ class ARIMAX_Trends2Price(luigi.Task):
         ]
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir + "ARIMAX_Trends2Price.pickle")
+        # return luigi.LocalTarget(config.data_dir + "ARIMAX_Trends2Price.pickle")
+        return luigi.LocalTarget(config.plot_dir + 'ARIMAX_test_dynamicPrediction.png')
 
     def run(self):
-        trends_dta = pandas.read_csv(self.input()[0].path, names=['date','trends'], header=None)
-        price_dta  = pandas.read_csv(self.input()[1].path, names=['date','price'], header=None)
+        trends_dta = pandas.read_csv(self.input()[0].path, names=['date','trends'], header=0)
+        price_dta  = pandas.read_csv(self.input()[1].path, names=['date','price'], header=0)
 
         merged_inner = pandas.merge(
             left=trends_dta, left_on='date',
             right=price_dta, right_on='date'
         )
 
-        merged_inner['date'] = pandas.to_datetime(merged_inner['date'])
+        # merged_inner['date'] = pandas.to_datetime(merged_inner['date'])
         merged_inner = merged_inner.set_index('date')
 
-        print(merged_inner['price'])
+        # home:
+        # how to apply dateutil parser to all values in column
+        #   df['date'].apply(dateutil.parser.parse)
+
+        # print(merged_inner['price'])
 
         model = fitARIMAX(
             merged_inner['price'].astype('float64') ,
@@ -51,16 +56,17 @@ class ARIMAX_Trends2Price(luigi.Task):
 
         # # print arma_mod20.aic, arma_mod20.bic, arma_mod20.hqic
         print('=== MODEL PARAMS ===')
-        print(model.params)
+        print(model.params,'\n')
 
         print('AIC, BIC, HQIC:')
-        print(model.aic, model.bic, model.hqic)
+        print(model.aic, model.bic, model.hqic, '\n')
 
-        with open(self.output().path, 'wb') as outfile:
-            pickle.dump(model, outfile)
+        # with open(self.output().path, 'wb') as outfile:
+        #     pickle.dump(model, outfile)
 
         # TODO: use self.output() for these figures too
         testModelFit(model, price_dta)
+        print(merged_inner)
         testDynamicPrediction(model, price_dta, trends_dta)
 
 
@@ -107,20 +113,33 @@ def testModelFit(arma_mod30, dta):
     r,q,p = sm.tsa.acf(residuals.values.squeeze(), qstat=True)
     data = np.c_[range(1,41), r[1:], q, p]
     table = pandas.DataFrame(data, columns=['lag', "AC", "Q", "Prob(>Q)"])
-    # print table.set_index('lag')
+    print(table.set_index('lag'))
 
     # sample data indicates a lack of fit.
 
 def testDynamicPrediction(arma_mod30, dta, interven):
-    tf = len(dta)
-    t0 = tf*2/3
+    latest   = dta['date'].max()
+    earliest = dta['date'].min()
+    # range_delta = latest - earliest
+    tf = '2017-03' #  #len(dta)
+    t0 = '2015-02'
 
-    print(interven)
-    
+    # print(interven)
+
+    print('==========================================================')
+    print('earliest', '\t\t', 't0     ', '\t\t', 'tf    ', '\t\t', 'latest')
+    print(earliest,   '\t\t',  t0,       '\t\t',  tf,      '\t\t',  latest)
+    print('==========================================================')
+
+    print(arma_mod30)
+    print(dir(arma_mod30))#['2017-03-01 00:00:00'])
+
     predict_sunspots = arma_mod30.predict(t0, tf, exog=interven, dynamic=True)
     # print predict_sunspots
 
-    ax = dta.ix['2012':].plot(figsize=(12,8))
+    ax = dta.ix['2016':].plot(figsize=(12,8))
+    # ax = dta.plot()
+    # plt.savefig(config.plot_dir + "ARIMAX_test_dynamicPrediction_pre.png", bbox_inches='tight')
     ax = predict_sunspots.plot(ax=ax, style='r--', label='Dynamic Prediction');
     ax.legend();
     # ax.axis((-20.0, 38.0, -4.0, 200.0));
