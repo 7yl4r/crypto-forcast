@@ -13,8 +13,14 @@ def fitARIMAX(dta, exogeneous):
     # arma_mod20 = model20.fit()
     # print arma_mod20.params
 
-    model30 = sm.tsa.ARMA(dta, (1,0,0), exog=exogeneous)
-    arma_mod30 = model30.fit()
+    # sm.tsa.ARIMA(dta, (1,0,0), exog=exogeneous)
+    arima_model = sm.tsa.statespace.SARIMAX(
+        dta,
+        order=(7,2,3),
+        trend='c',
+        exog=exogeneous
+    )
+    arima_model_result = arima_model.fit(disp=False)
     # # print arma_mod20.aic, arma_mod20.bic, arma_mod20.hqic
     # print '=== MODEL PARAMS ==='
     # print arma_mod30.params
@@ -22,4 +28,4 @@ def fitARIMAX(dta, exogeneous):
     # print 'AIC, BIC, HQIC:'
     # print arma_mod30.aic, arma_mod30.bic, arma_mod30.hqic
 
-    return arma_mod30
+    return arima_model_result

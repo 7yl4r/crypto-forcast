@@ -1,6 +1,9 @@
 """
-calculates & plots Cross-Correlation Function with trends data as
+calculates & plots ARIMAX model with trends data as
 exogeneous inflow & price as the outflow
+
+good arimax overview:
+https://machinelearningmastery.com/arima-for-time-series-forecasting-with-python/
 """
 
 import luigi
@@ -127,8 +130,8 @@ def testDynamicPrediction(arma_mod30, dta, interven):
     latest   = dta.index[-1]
     earliest = dta.index[0]
     # range_delta = latest - earliest
-    tf = '2017-10-30' #  #len(dta)
-    t0 = '2016-01-01'
+    tf = '2017-05-30' #  #len(dta)
+    t0 = '2014-12-01'
 
     # print(interven)
 
@@ -140,31 +143,31 @@ def testDynamicPrediction(arma_mod30, dta, interven):
     # print(arma_mod30)
     # print(dir(arma_mod30))
 
-    predict_sunspots = arma_mod30.predict(t0, tf, exog=interven, dynamic=True)
+    predict_sunspots = arma_mod30.predict(t0, tf, exog=interven, dynamic=False)
     # print predict_sunspots
 
     selected_dta = dta.loc[t0:]
+    selected_dta.index = pandas.to_datetime(selected_dta.index)
+
+    # pdb.set_trace()
+
+    plt.clf()
     print('selected_dta: \n', selected_dta)
     ax = selected_dta.plot(figsize=(12,8))
-    # ax = dta.plot()
-    plt.savefig(config.plot_dir + "ARIMAX_test_dynamicPrediction_pre.png", bbox_inches='tight')
+    # plt.savefig(config.plot_dir + "ARIMAX_test_dynamicPrediction_pre.png", bbox_inches='tight')
 
-
-    # this crashes next part crashes...
     print("\n\npredictions:\n", predict_sunspots)
-    ax = predict_sunspots.plot(ax=ax, style='r--', label='Dynamic Prediction', figsize=(12,8));
+    ax2 = predict_sunspots.plot(style='r--', label='Dynamic Prediction', figsize=(12,8));
     # ax.legend();
     # ax.axis((-20.0, 38.0, -4.0, 200.0));
     plt.savefig(config.plot_dir + 'ARIMAX_test_dynamicPrediction.png', bbox_inches='tight')
 
-    plt.clf()
-
     def mean_forecast_err(y, yhat):
         return y.sub(yhat).mean()
 
-    # mf_err = mean_forecast_err(dta.SUNACTIVITY, predict_sunspots)
+    mf_err = mean_forecast_err(selected_dta, predict_sunspots)
 
-    # print ('mean forcast err: ' + str(mf_err))
+    print ('mean forcast err: ' + str(mf_err))
 
 
 def plotACFAndPACF(dta, saveFigName=None):
