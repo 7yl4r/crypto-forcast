@@ -16,7 +16,7 @@ def fitARIMAX(dta, exogeneous):
     # sm.tsa.ARIMA(dta, (1,0,0), exog=exogeneous)
     arima_model = sm.tsa.statespace.SARIMAX(
         dta,
-        order=(7,2,3),
+        order=(7,1,3),
         trend='c',
         exog=exogeneous
     )

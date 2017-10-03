@@ -126,7 +126,7 @@ def testModelFit(arma_mod30, dta):
 
     # sample data indicates a lack of fit.
 
-def testDynamicPrediction(arma_mod30, dta, interven):
+def testDynamicPrediction(model_result, dta, interven):
     latest   = dta.index[-1]
     earliest = dta.index[0]
     # range_delta = latest - earliest
@@ -140,26 +140,25 @@ def testDynamicPrediction(arma_mod30, dta, interven):
     print(earliest,   '\t\t',  t0,       '\t\t',  tf,      '\t\t',  latest)
     print('==========================================================')
 
-    # print(arma_mod30)
-    # print(dir(arma_mod30))
-
-    predict_sunspots = arma_mod30.predict(t0, tf, exog=interven, dynamic=False)
-    # print predict_sunspots
+    predict_sunspots = model_result.predict(t0, tf, exog=interven, dynamic=False)
 
     selected_dta = dta.loc[t0:]
     selected_dta.index = pandas.to_datetime(selected_dta.index)
 
-    # pdb.set_trace()
-
     plt.clf()
-    print('selected_dta: \n', selected_dta)
+    # print('selected_dta: \n', selected_dta)
     ax = selected_dta.plot(figsize=(12,8))
     # plt.savefig(config.plot_dir + "ARIMAX_test_dynamicPrediction_pre.png", bbox_inches='tight')
 
-    print("\n\npredictions:\n", predict_sunspots)
-    ax2 = predict_sunspots.plot(style='r--', label='Dynamic Prediction', figsize=(12,8));
+    # print("\n\npredictions:\n", predict_sunspots)
+    ax2 = predict_sunspots.plot(style='r--', label='Dynamic Prediction', figsize=(12,8))
     # ax.legend();
     # ax.axis((-20.0, 38.0, -4.0, 200.0));
+    N = 90  # WARN!!! this uses old exog values...
+    # TODO use future exog values (from prediction? or maybe build model with time-shifted exogs @ start?)
+    forecast = model_result.forecast(steps=N, exog=np.array([interven[-N:]]).transpose(), alpha=0.05)
+    ax3 = forecast.plot(style='y--', label='Forecast', figsize=(12,8))
+
     plt.savefig(config.plot_dir + 'ARIMAX_test_dynamicPrediction.png', bbox_inches='tight')
 
     def mean_forecast_err(y, yhat):
