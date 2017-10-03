@@ -5,6 +5,13 @@ The idea here is pretty simple:
 3. predict on current data
 4. profit!
 
+# Usage:
+```bash
+source ./virtualEnv/bin/activate
+`luigid`  # to start the scheduler
+`python CryptoForecast/run_luigi.py MyTaskName`
+```
+
 # Implementation plan:
 1. pick a primary model
 2. reproduce model results on test set
@@ -24,7 +31,7 @@ Hmm... what data to ingest... How about:
     3. [trends csv downloader](https://github.com/pedrofaustino/google-trends-csv-downloader)
 4. sentiment analysis
     1. [twitter ingest](https://stackoverflow.com/questions/21579999/count-number-of-results-for-a-particular-word-on-twitter-api-v1-1) (NLP sold separately)
-    2. 
+    2.
 
 ## pre-processing
 1. USD values could be adjusted using [CPI values](http://www.usinflationcalculator.com/inflation/consumer-price-index-and-annual-percent-changes-from-1913-to-2008/) from [bls.gov data](https://download.bls.gov/pub/time.series/cu/)

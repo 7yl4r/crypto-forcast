@@ -30,6 +30,7 @@ from preprocess.TrendsInterpolation import TrendsInterpolation
 from vizualize.PlotRawData import PlotRawData  # this plots grouped price data
 from vizualize.PlotTrendsAndPrice import PlotTrendsAndPrice
 from vizualize.CCF_Trends2Price import CCF_Trends2Price
+from vizualize.SeasonalAnalysis import SeasonalAnalysis
 
 # model
 from model.ARIMAX_Trends2Price import ARIMAX_Trends2Price
