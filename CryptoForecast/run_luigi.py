@@ -23,7 +23,7 @@ from btc.preprocess.DecompressPrices import DecompressPrices  # ->
 from btc.preprocess.GroupByTimeStamp import GroupByTimeStamp  # ->
 from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 
-from btc.PlotRawData import PlotRawData  # <- GroupByTimeStamp
+from btc.preprocess.PlotRawData import PlotRawData  # <- GroupByTimeStamp
 
 # === google trends
 from googleTrends.IngestGoogleTrends import IngestGoogleTrends  # ->
