@@ -15,12 +15,14 @@ import luigi
 import config
 
 # === Task Classes:
-# ingest
+# btc
 from btc.IngestPrices import IngestPrices
+from btc.preprocess.DecompressPrices import DecompressPrices
+
+# google trends
 from googleTrends.IngestGoogleTrends import IngestGoogleTrends
 
 # preprocess
-from preprocess.DecompressPrices import DecompressPrices
 from preprocess.GroupByTimeStamp import GroupByTimeStamp
 from preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 

@@ -5,7 +5,7 @@ samples price data with timestamps close enough get summarized
 import luigi
 
 import config
-from preprocess.DecompressPrices import DecompressPrices
+from btc.preprocess.DecompressPrices import DecompressPrices
 
 class GroupByTimeStamp(luigi.Task):
 

@@ -6,7 +6,17 @@ mkdir $dirname
 mkdir $dirname/data
 mv data/* $dirname/data/.
 
-# uhh... put ingested data back b/c I don't want to worry about making those
-#   work right now.
+# create data directory structure
 mkdir data/ingest
+mkdir data/preprocess
+mkdir data/model
+mkdir data/model-evaluation
+mkdir data/forecast
+mkdir data/action
+mkdir data/action-evaluation
+
+# uhh... put ingested data back b/c I don't want to worry about
+#   making those work right now...
 mv $dirname/data/ingest/* data/ingest/.
+# aaaand also this pre-processing that isn't working...
+mv $dirname/data/preprocess/coinbaseUSD.csv data/preprocess/coinbaseUSD.csv

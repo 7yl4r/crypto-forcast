@@ -14,7 +14,7 @@ class DecompressPrices(luigi.Task):
         return [IngestPrices()]
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir+"coinbaseUSD.csv")
+        return luigi.LocalTarget(config.data_dir+"preprocess/coinbaseUSD.csv")
 
     def run(self):
         with self.input()[0].open('rb') as fin, self.output().open('w') as fout:
