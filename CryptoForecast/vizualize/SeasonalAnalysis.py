@@ -7,7 +7,7 @@ import pandas
 import matplotlib.pyplot as plt
 
 import config
-from preprocess.TrendsInterpolation import TrendsInterpolation
+from googleTrends.preprocess.TrendsInterpolation import TrendsInterpolation
 from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 from plotters.seasonalDecompose import seasonalDecompose
 

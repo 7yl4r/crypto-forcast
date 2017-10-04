@@ -17,7 +17,7 @@ from statsmodels.graphics.api import qqplot
 import numpy as np
 
 import config
-from preprocess.TrendsInterpolation import TrendsInterpolation
+from googleTrends.preprocess.TrendsInterpolation import TrendsInterpolation
 from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 from model.models import fitARIMAX
 

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import datetime
 
 import config
-from preprocess.TrendsInterpolation import TrendsInterpolation
+from googleTrends.preprocess.TrendsInterpolation import TrendsInterpolation
 from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 
 def dateparse (time_in_secs):

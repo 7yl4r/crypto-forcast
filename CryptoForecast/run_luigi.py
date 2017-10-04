@@ -18,22 +18,18 @@ import config
 # btc
 from btc.IngestPrices import IngestPrices  # ->
 from btc.preprocess.DecompressPrices import DecompressPrices  # ->
-from btc.preprocess.GroupByTimeStamp import GroupByTimeStamp
+from btc.preprocess.GroupByTimeStamp import GroupByTimeStamp  # ->
 from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 
 # google trends
-from googleTrends.IngestGoogleTrends import IngestGoogleTrends
+from googleTrends.IngestGoogleTrends import IngestGoogleTrends  # ->
+from googleTrends.preprocess.TrendsInterpolation import TrendsInterpolation
 
-# preprocess
-from preprocess.TrendsInterpolation import TrendsInterpolation
-
-# visualization
+# TODO: port these remaining classes to new org structure:
 from vizualize.PlotRawData import PlotRawData  # this plots grouped price data
 from vizualize.PlotTrendsAndPrice import PlotTrendsAndPrice
 from vizualize.CCF_Trends2Price import CCF_Trends2Price
 from vizualize.SeasonalAnalysis import SeasonalAnalysis
-
-# model
 from model.ARIMAX_Trends2Price import ARIMAX_Trends2Price
 
 if __name__ == '__main__':
