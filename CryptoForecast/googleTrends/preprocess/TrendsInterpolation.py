@@ -18,7 +18,7 @@ class TrendsInterpolation(luigi.Task):
         return [IngestGoogleTrends()]
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir+"bitcoin_trends_interpolated.csv")
+        return luigi.LocalTarget(config.data_dir+"preprocess/bitcoin_trends_interpolated.csv")
 
     def run(self):
         print("\ndownsampling to f=1/(" + self.frequency_str + ")...\n")

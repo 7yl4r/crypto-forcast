@@ -13,7 +13,7 @@ class GroupByTimeStamp(luigi.Task):
         return [DecompressPrices()]
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir+"coinbaseUSD_grouped.csv")
+        return luigi.LocalTarget(config.data_dir+"preprocess/coinbaseUSD_grouped.csv")
 
     def run(self):
         with self.input()[0].open() as fin, self.output().open('w') as fout:

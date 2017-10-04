@@ -21,7 +21,7 @@ class Resample2DailyInterpolated(luigi.Task):
         return [GroupByTimeStamp()]
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir+"coinbaseUSD_sampled.csv")
+        return luigi.LocalTarget(config.data_dir+"preprocess/coinbaseUSD_sampled.csv")
 
     def run(self):
         print("\ndownsampling to f=1/(" + self.frequency_str + ")...\n")
