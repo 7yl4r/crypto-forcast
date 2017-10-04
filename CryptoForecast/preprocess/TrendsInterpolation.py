@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import datetime
 
 import config
-from IngestGoogleTrends import IngestGoogleTrends
+from googleTrends.IngestGoogleTrends import IngestGoogleTrends
 
 class TrendsInterpolation(luigi.Task):
     frequency_str = "D"  # f = 1 / 1 day

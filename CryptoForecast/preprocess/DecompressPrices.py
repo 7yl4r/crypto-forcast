@@ -6,7 +6,7 @@ import luigi
 import gzip
 
 import config
-from IngestPrices import IngestPrices
+from btc.IngestPrices import IngestPrices
 
 class DecompressPrices(luigi.Task):
 

@@ -13,7 +13,7 @@ class IngestPrices(luigi.Task):
         return []
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir+"coinbaseUSD.csv.gz")
+        return luigi.LocalTarget(config.data_dir+"ingest/coinbaseUSD.csv.gz")
 
     def run(self):
         # with self.output().open('w') as f:

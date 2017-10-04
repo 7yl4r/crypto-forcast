@@ -15,7 +15,7 @@ class IngestGoogleTrends(luigi.Task):
         return []
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir+"bitcoin_trends.csv")
+        return luigi.LocalTarget(config.data_dir+"ingest/bitcoin_trends.csv")
 
     def run(self):
         path = ""

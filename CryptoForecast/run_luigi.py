@@ -16,8 +16,8 @@ import config
 
 # === Task Classes:
 # ingest
-from IngestPrices import IngestPrices
-from IngestGoogleTrends import IngestGoogleTrends
+from btc.IngestPrices import IngestPrices
+from googleTrends.IngestGoogleTrends import IngestGoogleTrends
 
 # preprocess
 from preprocess.DecompressPrices import DecompressPrices
