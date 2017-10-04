@@ -20,7 +20,7 @@ class PlotRawData(luigi.Task):
         return [GroupByTimeStamp()]
 
     def output(self):
-        return luigi.LocalTarget(config.plot_dir+"data.png")
+        return luigi.LocalTarget(config.data_dir+"ingest/btc_rawdata.png")
 
     def run(self):
         print("\nsaving plot to ", self.output().path, "...\n")

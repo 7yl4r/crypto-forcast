@@ -14,19 +14,22 @@ import luigi
 
 import config
 
-# === Task Classes:
-# btc
+# ====================================================================
+# === Task Classes ===================================================
+# ====================================================================
+# === btc
 from btc.IngestPrices import IngestPrices  # ->
 from btc.preprocess.DecompressPrices import DecompressPrices  # ->
 from btc.preprocess.GroupByTimeStamp import GroupByTimeStamp  # ->
 from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 
-# google trends
+from btc.PlotRawData import PlotRawData  # <- GroupByTimeStamp
+
+# === google trends
 from googleTrends.IngestGoogleTrends import IngestGoogleTrends  # ->
 from googleTrends.preprocess.TrendsInterpolation import TrendsInterpolation
 
 # TODO: port these remaining classes to new org structure:
-from vizualize.PlotRawData import PlotRawData  # this plots grouped price data
 from vizualize.PlotTrendsAndPrice import PlotTrendsAndPrice
 from vizualize.CCF_Trends2Price import CCF_Trends2Price
 from vizualize.SeasonalAnalysis import SeasonalAnalysis
