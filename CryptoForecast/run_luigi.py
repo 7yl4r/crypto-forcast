@@ -19,12 +19,12 @@ import config
 from btc.IngestPrices import IngestPrices  # ->
 from btc.preprocess.DecompressPrices import DecompressPrices  # ->
 from btc.preprocess.GroupByTimeStamp import GroupByTimeStamp
+from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 
 # google trends
 from googleTrends.IngestGoogleTrends import IngestGoogleTrends
 
 # preprocess
-from preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 from preprocess.TrendsInterpolation import TrendsInterpolation
 
 # visualization

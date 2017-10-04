@@ -10,7 +10,7 @@ import datetime
 
 import config
 from preprocess.TrendsInterpolation import TrendsInterpolation
-from preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
+from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 
 def dateparse (time_in_secs):
     return datetime.datetime.fromtimestamp(float(time_in_secs))

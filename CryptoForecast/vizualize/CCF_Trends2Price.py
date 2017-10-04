@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 import config
 from preprocess.TrendsInterpolation import TrendsInterpolation
-from preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
+from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 from plotters.ccf import plotCCF
 
 

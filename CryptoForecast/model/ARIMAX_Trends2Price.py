@@ -18,7 +18,7 @@ import numpy as np
 
 import config
 from preprocess.TrendsInterpolation import TrendsInterpolation
-from preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
+from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 from model.models import fitARIMAX
 
 import pdb
