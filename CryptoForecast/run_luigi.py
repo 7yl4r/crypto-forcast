@@ -25,12 +25,13 @@ from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 
 from btc.preprocess.PlotRawData import PlotRawData  # <- GroupByTimeStamp
 
+from btc.model.PlotInflows import PlotInflows as BTCInflows
+
 # === google trends
 from googleTrends.IngestGoogleTrends import IngestGoogleTrends  # ->
 from googleTrends.preprocess.TrendsInterpolation import TrendsInterpolation
 
 # TODO: port these remaining classes to new org structure:
-from vizualize.PlotTrendsAndPrice import PlotTrendsAndPrice
 from vizualize.CCF_Trends2Price import CCF_Trends2Price
 from vizualize.SeasonalAnalysis import SeasonalAnalysis
 from model.ARIMAX_Trends2Price import ARIMAX_Trends2Price
