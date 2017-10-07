@@ -3,10 +3,13 @@ cross-correlations and partial cross-correlations
 """
 
 import matplotlib.pyplot as plt
-
 from statsmodels.tsa.seasonal import seasonal_decompose
-
 import datetime
+import itertools
+import numpy as np
+from matplotlib.mlab import griddata
+from mpl_toolkits.mplot3d import Axes3D
+from pylab import *
 
 def seasonalDecompose(data, saveFigName=None, dataResolution=1, seasonLen=60*24):
     """
@@ -21,6 +24,11 @@ def seasonalDecompose(data, saveFigName=None, dataResolution=1, seasonLen=60*24)
     seasonal = decomposition.seasonal
     residual = decomposition.resid
 
+    plotSeasonBreakdown(data, trend, seasonal, residual, decompfreq, saveFigName)
+    plotRibbons(seasonal, "".join(saveFigName.split('.')[:-1])+"_ribbon.png", seasonLen)
+
+def plotSeasonBreakdown(data, trend, seasonal, residual, decompfreq, saveFigName=None):
+    """ plots each on own subplot """
     ax1 = plt.subplot(411)
     plt.plot(data)#, label='Original')
     ax1.set_title('original')
@@ -42,3 +50,35 @@ def seasonalDecompose(data, saveFigName=None, dataResolution=1, seasonLen=60*24)
         plt.show()
     else:
         plt.savefig(str(saveFigName))
+
+def plotRibbons(dta, saveFigName, index):
+    fig=gcf()
+    ax=fig.gca(projection='3d')
+    width=7  # assumes two indicies aren't too close together...
+
+    y=dta
+    x=sorted(list(range(1,len(y)+1))*2)
+    a=[index,index+width]*len(y)
+    b=list(itertools.chain(*zip(y,y)))
+    xi=np.linspace(min(x),max(x))
+    yi=np.linspace(min(a),max(a))
+    X,Y=np.meshgrid(xi,yi)
+    Z=griddata(x,a,b,xi,yi, interp='linear')
+    ax.plot_surface(X,Y,Z,rstride=50,cstride=1,cmap='Spectral')
+    ax.set_zlim3d(np.min(Z),np.max(Z))
+
+    ax.grid(False)
+    ax.w_xaxis.pane.set_visible(False)
+    ax.w_yaxis.pane.set_visible(False)
+    ax.w_zaxis.pane.set_color('gainsboro')
+    # ax.set_title('Molecular spectra')
+    # ax.set_xlim3d(0,23)
+    # ax.set_xticks([1.6735,6.8367,12.0000,17.1633,22.3265])
+    # ax.set_xticklabels(['350','400','450','500','550'])
+    # ax.set_xlabel('Wavelength (nm)')
+    # ax.set_yticks([0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5])
+    # ax.set_yticklabels(['1','2','3','4','5','6','7','8'])
+    # ax.set_ylabel('Spectrum')
+    # ax.set_zlim3d(0,2)
+    # ax.set_zlabel('Absorbance')
+    plt.savefig(str(saveFigName))
