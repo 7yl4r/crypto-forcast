@@ -11,9 +11,7 @@ from googleTrends.preprocess.TrendsInterpolation import TrendsInterpolation
 from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 from plotters.seasonalDecompose import seasonalDecompose
 
-
 class SeasonalAnalysis(luigi.Task):
-
     def requires(self):
         return [
             TrendsInterpolation(),

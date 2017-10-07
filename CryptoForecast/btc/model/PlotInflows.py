@@ -3,7 +3,7 @@ import luigi
 import config
 from googleTrends.preprocess.TrendsInterpolation import TrendsInterpolation
 from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
-from common.model.PlotMultipleScaledTimeSeries import PlotMultipleScaledTimeSeries
+from common.analyze.PlotMultipleScaledTimeSeries import PlotMultipleScaledTimeSeries
 
 class PlotInflows(PlotScaledTimeSeries):
     def requires(self):
