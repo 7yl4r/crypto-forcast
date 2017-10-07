@@ -9,6 +9,7 @@ mv data/* $dirname/data/.
 # create data directory structure
 mkdir data/ingest
 mkdir data/preprocess
+mkdir data/analyze
 mkdir data/model
 mkdir data/model-evaluation
 mkdir data/forecast
