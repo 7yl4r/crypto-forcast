@@ -24,7 +24,7 @@ def seasonalDecompose(data, saveFigName=None, dataResolution=1, seasonLen=60*24)
     seasonal = decomposition.seasonal
     residual = decomposition.resid
 
-    plotSeasonBreakdown(data, trend, seasonal, residual, decompfreq, saveFigName)
+    # plotSeasonBreakdown(data, trend, seasonal, residual, decompfreq, saveFigName)
     plotRibbons(seasonal, "".join(saveFigName.split('.')[:-1])+"_ribbon.png", seasonLen)
 
 def plotSeasonBreakdown(data, trend, seasonal, residual, decompfreq, saveFigName=None):
@@ -54,7 +54,9 @@ def plotSeasonBreakdown(data, trend, seasonal, residual, decompfreq, saveFigName
 def plotRibbons(dta, saveFigName, index):
     fig=gcf()
     ax=fig.gca(projection='3d')
-    width=7  # assumes two indicies aren't too close together...
+    width=5  # assumes two indicies aren't too close together...
+    y_min=0  # assumes given index (season len) is between 0-100
+    y_max=100
 
     y=dta
     x=sorted(list(range(1,len(y)+1))*2)
@@ -64,9 +66,16 @@ def plotRibbons(dta, saveFigName, index):
     yi=np.linspace(min(a),max(a))
     X,Y=np.meshgrid(xi,yi)
     Z=griddata(x,a,b,xi,yi, interp='linear')
-    ax.plot_surface(X,Y,Z,rstride=50,cstride=1,cmap='Spectral')
-    ax.set_zlim3d(np.min(Z),np.max(Z))
 
+    # to plot w/ y-axis colormapped:
+    # colors =plt.cm.spectral( (Y-Y.min())/float((Y-Y.min()).max()) )
+    colors =plt.cm.spectral( (Y-y_min)/float(y_max-y_min) )
+    ax.plot_surface(X,Y,Z ,facecolors=colors, linewidth=0, shade=False )
+
+    # to plot w/ z-axis colormapped:
+    # ax.plot_surface(X,Y,Z,rstride=50,cstride=1,cmap='Spectral')
+
+    ax.set_zlim3d(np.min(Z),np.max(Z))
     ax.grid(False)
     ax.w_xaxis.pane.set_visible(False)
     ax.w_yaxis.pane.set_visible(False)
