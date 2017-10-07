@@ -11,6 +11,6 @@ class BTCSeasonal(SeasonalAnalysis):
         ]
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir+"/analyze/seasonal.results")
+        return luigi.LocalTarget(config.data_dir+"/analyze/btc_seasonal.results")
 
     col_names=['date','price']
