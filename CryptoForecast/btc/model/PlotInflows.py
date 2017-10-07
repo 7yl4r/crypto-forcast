@@ -5,7 +5,7 @@ from googleTrends.preprocess.TrendsInterpolation import TrendsInterpolation
 from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 from common.analyze.PlotMultipleScaledTimeSeries import PlotMultipleScaledTimeSeries
 
-class PlotInflows(PlotScaledTimeSeries):
+class PlotInflows(PlotMultipleScaledTimeSeries):
     def requires(self):
         return [
             TrendsInterpolation(),

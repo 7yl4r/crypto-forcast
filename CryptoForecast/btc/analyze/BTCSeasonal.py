@@ -1,5 +1,7 @@
-from common.analysis.SeasonalAnalysis import SeasonalAnalysis
+import luigi
 
+import config
+from common.analyze.SeasonalAnalysis import SeasonalAnalysis
 from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 
 class BTCSeasonal(SeasonalAnalysis):
@@ -9,6 +11,6 @@ class BTCSeasonal(SeasonalAnalysis):
         ]
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir+"/analyze/seasonal_month.png")
+        return luigi.LocalTarget(config.data_dir+"/analyze/seasonal.results")
 
     col_names=['date','price']

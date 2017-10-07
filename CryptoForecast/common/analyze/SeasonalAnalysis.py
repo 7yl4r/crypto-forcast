@@ -26,17 +26,20 @@ class SeasonalAnalysis(luigi.Task):
         The date column should come first eg : ['date', 'my_values']
     """
     # Optional Attributes
-    ----------
+    # ----------
     seasons=[7, 29.53, 30.44, 365]
+    #   season lengths to try out
+
     def run(self):
         dta = pandas.read_csv(self.input()[0].path, names=self.col_names, header=0)
 
         for season in self.seasons:
             seasonalDecompose(
-                merged_inner[self.col_names[1]].astype('float64'),
-                saveFigName=self.output().path,
+                dta[self.col_names[1]].astype('float64'),
+                saveFigName=self.output().path+".png",
                 dataResolution=1,
                 seasonLen=season
             )
 
-        #     merged_inner['trends'].astype('float64'),
+        with open(self.output().path, 'w') as outfile:
+            outfile.write("TODO: add results here")
