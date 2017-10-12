@@ -63,9 +63,15 @@ def plotImage(dta, saveFigName):
             slice(0, len(dta[0]), dy)
         ]
         z = dta
-        # print(z)
         z_min, z_max = -np.abs(z).max(), np.abs(z).max()
-        plt.pcolor(x, y, z, cmap='hsv', vmin=z_min, vmax=z_max)
+
+        #try:
+        c = plt.pcolormesh(x, y, z, cmap='hsv', vmin=z_min, vmax=z_max)
+        #except ??? as err:  # data not regular?
+        #   c = plt.pcolor(x, y, z, cmap='hsv', vmin=z_min, vmax=z_max)
+        d = plt.colorbar(c, orientation='vertical')
+        lx = plt.xlabel("index")
+        ly = plt.ylabel("lag")
         plt.savefig(str(saveFigName))
 
 def plotRibbons(dta, saveFigName, index):

@@ -30,15 +30,19 @@ class SeasonalAnalysis(luigi.Task):
     """
     # Optional Attributes
     # ----------
-    seasons=range(2,400)#[7, 29.53, 30.44, 30.44*3, 365]
+    seasons=None#[7, 29.53, 30.44, 30.44*3, 365]
     #   season lengths to try out
     #
-    min_seasons=5
+    min_seasons=2
     #   dataset must contain this number of seasons else it will be excluded
     def run(self):
         for i, inp in enumerate(self.input()):
             print(" === " + inp.path + " === \n")
             dta = pandas.read_csv(inp.path,  header=0, quotechar='"')#, names=self.col_names)
+            
+            if self.seasons is None:
+                self.seasons = range(2, math.ceil(len(dta)/self.min_seasons+2))
+
             seasonal_arry = [[0]*len(dta)]*(max(self.seasons)+1)
             trend_arry    = [[0]*len(dta)]*(max(self.seasons)+1)
             resid_arry    = [[0]*len(dta)]*(max(self.seasons)+1)
