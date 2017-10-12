@@ -57,14 +57,16 @@ def plotImage(dta, saveFigName):
     plt.clf()
     dx, dy = 1, 1
     # generate 2 2d grids for the x & y bounds
-    y, x = np.mgrid[
-        slice(0, len(dta)   , dx),
-        slice(0, len(dta[0]), dy)
-    ]
-    z = dta
-    z_min, z_max = -np.abs(z).max(), np.abs(z).max()
-    plt.pcolor(x, y, z, cmap='RdBu', vmin=z_min, vmax=z_max)
-    plt.savefig(str(saveFigName))
+    with np.errstate(invalid='ignore'):
+        y, x = np.mgrid[
+            slice(0, len(dta)   , dx),
+            slice(0, len(dta[0]), dy)
+        ]
+        z = dta
+        # print(z)
+        z_min, z_max = -np.abs(z).max(), np.abs(z).max()
+        plt.pcolor(x, y, z, cmap='hsv', vmin=z_min, vmax=z_max)
+        plt.savefig(str(saveFigName))
 
 def plotRibbons(dta, saveFigName, index):
     """

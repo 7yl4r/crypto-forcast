@@ -11,6 +11,7 @@ as well as (TODO) ?some? metric of how well each season-len performs as a predic
 import luigi
 import pandas
 import matplotlib.pyplot as plt
+import math
 
 import config
 from plotters.seasonalDecompose import seasonalDecompose, plotImage
@@ -29,7 +30,7 @@ class SeasonalAnalysis(luigi.Task):
     """
     # Optional Attributes
     # ----------
-    seasons=range(2,100)#[7, 29.53, 30.44, 30.44*3, 365]
+    seasons=range(2,400)#[7, 29.53, 30.44, 30.44*3, 365]
     #   season lengths to try out
     #
     min_seasons=5
@@ -38,8 +39,9 @@ class SeasonalAnalysis(luigi.Task):
         for i, inp in enumerate(self.input()):
             print(" === " + inp.path + " === \n")
             dta = pandas.read_csv(inp.path,  header=0, quotechar='"')#, names=self.col_names)
-            plt.clf()
-            result_arry = [[0]*len(dta)]*(max(self.seasons)+1)
+            seasonal_arry = [[0]*len(dta)]*(max(self.seasons)+1)
+            trend_arry    = [[0]*len(dta)]*(max(self.seasons)+1)
+            resid_arry    = [[0]*len(dta)]*(max(self.seasons)+1)
             for season in self.seasons:
                 if season*self.min_seasons < len(dta):
                     dcol = dta[self.col_names[1]]
@@ -51,13 +53,17 @@ class SeasonalAnalysis(luigi.Task):
                         dataResolution=1,
                         seasonLen=season
                     )
-                    result_arry[round(season)] = seasonal
+                    seasonal_arry[round(season)] = [0 if math.isnan(x) else x for x in seasonal]
+                    trend_arry[round(season)]    = [0 if math.isnan(x) else x for x in trend]
+                    resid_arry[round(season)]    = [0 if math.isnan(x) else x for x in residuals]
                 else :
                     print("\n\nWARN: not enough seasons in data " +
                         "for season of len " + str(season) +
                         " min_seasons is " + str(self.min_seasons)
                     )
-            plotImage(result_arry, self.output()[i].path+"_arry.png")
+            plotImage(seasonal_arry, self.output()[i].path+"_arry_seasonal.png")
+            plotImage(trend_arry   , self.output()[i].path+"_arry_trend.png")
+            plotImage(resid_arry   , self.output()[i].path+"_arry_residual.png")
 
             with open(self.output()[i].path, 'w') as outfile:
                 outfile.write("TODO: add results here")
