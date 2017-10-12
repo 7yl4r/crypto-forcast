@@ -24,12 +24,14 @@ def seasonalDecompose(data, saveFigName=None, dataResolution=1, seasonLen=60*24)
     seasonal = decomposition.seasonal
     residual = decomposition.resid
 
-    # plotSeasonBreakdown(data, trend, seasonal, residual, decompfreq, saveFigName)
-    plotRibbons(seasonal, "".join(saveFigName.split('.')[:-1])+"_ribbon.png", seasonLen)
+    plotSeasonBreakdown(data, trend, seasonal, residual, decompfreq, saveFigName)
+    # plotRibbons(seasonal, "".join(saveFigName.split('.')[:-1])+"_ribbon.png", seasonLen)
+    return trend, seasonal, residual
 
 def plotSeasonBreakdown(data, trend, seasonal, residual, decompfreq, saveFigName=None):
     """ plots each on own subplot """
     ax1 = plt.subplot(411)
+    # print(data)
     plt.plot(data)#, label='Original')
     ax1.set_title('original')
     plt.legend(loc='best')
@@ -51,7 +53,23 @@ def plotSeasonBreakdown(data, trend, seasonal, residual, decompfreq, saveFigName
     else:
         plt.savefig(str(saveFigName))
 
+def plotImage(dta, saveFigName):
+    plt.clf()
+    dx, dy = 1, 1
+    # generate 2 2d grids for the x & y bounds
+    y, x = np.mgrid[
+        slice(0, len(dta)   , dx),
+        slice(0, len(dta[0]), dy)
+    ]
+    z = dta
+    z_min, z_max = -np.abs(z).max(), np.abs(z).max()
+    plt.pcolor(x, y, z, cmap='RdBu', vmin=z_min, vmax=z_max)
+    plt.savefig(str(saveFigName))
+
 def plotRibbons(dta, saveFigName, index):
+    """
+    creates ribbon-plot one-ribbon-at-a-time
+    """
     fig=gcf()
     ax=fig.gca(projection='3d')
     width=5  # assumes two indicies aren't too close together...

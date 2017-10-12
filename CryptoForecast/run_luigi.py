@@ -34,6 +34,9 @@ from googleTrends.preprocess.TrendsInterpolation import TrendsInterpolation
 
 from googleTrends.analyze.TrendsSeasonal import TrendsSeasonal
 
+# === kaggle dataset
+from kaggle.analyze.KaggleSeasonal import KaggleSeasonal
+
 # TODO: port these remaining classes to new org structure:
 from vizualize.CCF_Trends2Price import CCF_Trends2Price
 from model.ARIMAX_Trends2Price import ARIMAX_Trends2Price

@@ -1,0 +1,3 @@
+[submodule "CryptoForecast/lib/horizongraph"]
+	path = CryptoForecast/lib/horizongraph
+	url = https://github.com/thomaskern/horizongraph_matplotlib
