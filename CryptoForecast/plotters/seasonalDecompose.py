@@ -71,7 +71,7 @@ def plotImage(dta, saveFigName):
         #   c = plt.pcolor(x, y, z, cmap='hsv', vmin=z_min, vmax=z_max)
         d = plt.colorbar(c, orientation='vertical')
         lx = plt.xlabel("index")
-        ly = plt.ylabel("lag")
+        ly = plt.ylabel("season length")
         plt.savefig(str(saveFigName))
 
 def plotRibbons(dta, saveFigName, index):

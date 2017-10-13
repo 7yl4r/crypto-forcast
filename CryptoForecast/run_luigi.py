@@ -27,6 +27,7 @@ from btc.preprocess.PlotRawData import PlotRawData  # <- GroupByTimeStamp
 
 from btc.model.PlotInflows import PlotInflows as BTCInflows
 from btc.analyze.BTCSeasonal import BTCSeasonal
+from btc.analyze.BTCFFT import BTCFFT
 
 # === google trends
 from googleTrends.IngestGoogleTrends import IngestGoogleTrends  # ->

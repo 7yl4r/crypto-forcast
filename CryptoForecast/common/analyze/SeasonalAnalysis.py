@@ -39,7 +39,7 @@ class SeasonalAnalysis(luigi.Task):
         for i, inp in enumerate(self.input()):
             print(" === " + inp.path + " === \n")
             dta = pandas.read_csv(inp.path,  header=0, quotechar='"')#, names=self.col_names)
-            
+
             if self.seasons is None:
                 self.seasons = range(2, math.ceil(len(dta)/self.min_seasons+2))
 
