@@ -37,6 +37,7 @@ from googleTrends.analyze.TrendsSeasonal import TrendsSeasonal
 
 # === kaggle dataset
 from kaggle.analyze.KaggleSeasonal import KaggleSeasonal
+from kaggle.analyze.KaggleFFT import KaggleFFT
 
 # TODO: port these remaining classes to new org structure:
 from vizualize.CCF_Trends2Price import CCF_Trends2Price

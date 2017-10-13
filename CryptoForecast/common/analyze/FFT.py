@@ -31,7 +31,7 @@ class FFT(luigi.Task):
             dfcol = dcol.apply(lambda x: float(str(x).split()[0].replace(',', ''))) #  rm commas in values
 
             # Number of samplepoints
-            N = 600
+            N = len(dfcol)
             # sample spacing
             T = 1.0 / 800.0
             x = np.linspace(0.0, N*T, N)
@@ -39,16 +39,18 @@ class FFT(luigi.Task):
             yf = scipy.fftpack.fft(y)
             xf = np.linspace(0.0, 1.0/(2.0*T), N/2)
 
+            plt.clf()
+
             # plot 0-inf
             # plt.plot(xf, 2.0/N * np.abs(yf[0:N/2]))
 
             # plot 1-inf
-            print(yf)
             plt.plot(xf[1:], 2.0/N * np.abs(yf[0:int(N/2)])[1:])
 
             # log-scale
-            # plt.semilogy(xf, 2.0/N * np.abs(yf[0:N/2]))
+            # plt.semilogy(xf, 2.0/N * np.abs(yf[0:int(N/2)]))
 
             plt.savefig(self.output()[i].path)
+
             # with open(self.output()[i].path, 'w') as outfile:
             #     outfile.write("TODO: add results here")
