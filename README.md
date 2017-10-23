@@ -31,7 +31,7 @@ Hmm... what data to ingest... How about:
     3. [trends csv downloader](https://github.com/pedrofaustino/google-trends-csv-downloader)
 4. sentiment analysis
     1. [twitter ingest](https://stackoverflow.com/questions/21579999/count-number-of-results-for-a-particular-word-on-twitter-api-v1-1) (NLP sold separately)
-    2.
+    2. stack overflow metrics ( ethereum / monero communities or question volumes on s.o. itself ) 
 
 ## pre-processing
 1. USD values could be adjusted using [CPI values](http://www.usinflationcalculator.com/inflation/consumer-price-index-and-annual-percent-changes-from-1913-to-2008/) from [bls.gov data](https://download.bls.gov/pub/time.series/cu/)
