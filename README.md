@@ -45,9 +45,17 @@ Hmm... what data to ingest... How about:
     3. [granger causality on non-stationary data](http://davegiles.blogspot.no/2011/04/testing-for-granger-causality.html)
     4. [other causality predictor(s) from kaggle cause-effect-pairs](https://www.kaggle.com/c/cause-effect-pairs/discussion/5702)
     5. [MVGC method)](http://erramuzpe.github.io/C-PAC/blog/2015/06/10/multivariate-granger-causality-in-python-for-fmri-timeseries-analysis/)
+2. :hourglass: cross-correlation function
     
 ## pre-processing
 1. USD values could be adjusted using [CPI values](http://www.usinflationcalculator.com/inflation/consumer-price-index-and-annual-percent-changes-from-1913-to-2008/) from [bls.gov data](https://download.bls.gov/pub/time.series/cu/)
+
+## Analysis
+1. :white_check_mark: frequency analysis
+    1. :white_check_mark: FFT
+    2. :white_check_mark: seasonal decomposition
+    3. :hourglass: ACF & PACF
+
 
 ## Modeling
 Time series models... For these I like:
@@ -68,4 +76,3 @@ Time series models... For these I like:
     1. :white_check_mark: my old [behavAR](https://github.com/7yl4r/BehavAR) project
         1. also see [this script](https://github.com/PIELab/interventionViz/blob/master/behavARX.py)
     2. :hourglass: ARIMA / ARIMAX
-4. :white_check_mark: frequency analysis
