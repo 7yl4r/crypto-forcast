@@ -36,7 +36,10 @@ Hmm... what data to ingest... How about:
     3. [trends csv downloader](https://github.com/pedrofaustino/google-trends-csv-downloader)
 4. sentiment analysis
     1. [twitter ingest](https://stackoverflow.com/questions/21579999/count-number-of-results-for-a-particular-word-on-twitter-api-v1-1) (NLP sold separately)
-    2. stack overflow metrics ( ethereum / monero communities or question volumes on s.o. itself ) 
+5. stack overflow activity ( ethereum / monero communities or question volumes on s.o. itself ) 
+6. crypto-mining hardware release schedules
+7. crypto-mining profitablity recomendation calculators
+    1. like [coinwarz](https://www.coinwarz.com/cryptocurrency) profit ratio charts
 
 ### Exogenous Evaluation Methods
 1. granger causality test (and similar)
