@@ -25,9 +25,11 @@ from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 
 from btc.preprocess.PlotRawData import PlotRawData  # <- GroupByTimeStamp
 
-from btc.model.PlotInflows import PlotInflows as BTCInflows
+from btc.model.PlotInflows import PlotInflows
 from btc.analyze.BTCSeasonal import BTCSeasonal
 from btc.analyze.BTCFFT import BTCFFT
+
+from btc.model.BTCARIMAX import BTCARIMAX
 
 # === google trends
 from googleTrends.IngestGoogleTrends import IngestGoogleTrends  # ->
@@ -41,7 +43,6 @@ from kaggle.analyze.KaggleFFT import KaggleFFT
 
 # TODO: port these remaining classes to new org structure:
 from vizualize.CCF_Trends2Price import CCF_Trends2Price
-from model.ARIMAX_Trends2Price import ARIMAX_Trends2Price
 
 if __name__ == '__main__':
     luigi.run()

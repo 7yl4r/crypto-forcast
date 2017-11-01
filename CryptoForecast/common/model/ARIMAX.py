@@ -1,11 +1,3 @@
-"""
-calculates & plots ARIMAX model with trends data as
-exogeneous inflow & price as the outflow
-
-good arimax overview:
-https://machinelearningmastery.com/arima-for-time-series-forecasting-with-python/
-"""
-
 import luigi
 import pandas
 import matplotlib.pyplot as plt
@@ -19,21 +11,65 @@ import numpy as np
 import config
 from googleTrends.preprocess.TrendsInterpolation import TrendsInterpolation
 from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
-from model.models import fitARIMAX
 
 import pdb
 
-class ARIMAX_Trends2Price(luigi.Task):
+
+
+def fitARIMAX(dta, exogeneous):
+    """ helper function """
+    # NOTE: can set exog=[] to set exogeneous variables
+    print("fitting arimax model...")
+    print('dta', dta.shape, ' exog ', exogeneous.shape)
+    # model20 = sm.tsa.ARMA(dta, (2,0), exog=interven)
+    # arma_mod20 = model20.fit()
+    # print arma_mod20.params
+
+    # sm.tsa.ARIMA(dta, (1,0,0), exog=exogeneous)
+    arima_model = sm.tsa.statespace.SARIMAX(
+        dta,
+        order=(7,1,3),
+        trend='c',
+        exog=exogeneous
+    )
+    arima_model_result = arima_model.fit(disp=False)
+    # # print arma_mod20.aic, arma_mod20.bic, arma_mod20.hqic
+    # print '=== MODEL PARAMS ==='
+    # print arma_mod30.params
+    #
+    # print 'AIC, BIC, HQIC:'
+    # print arma_mod30.aic, arma_mod30.bic, arma_mod30.hqic
+
+    return arima_model_result
+
+
+
+class ARIMAX(luigi.Task):
+    """Extend this and set the following attributes use it with your data.
+
+    calculates & plots ARIMAX model
+    (TODO: generalize this) with trends data as exogeneous inflow & price as the outflow
+
+    good arimax overview:
+    https://machinelearningmastery.com/arima-for-time-series-forecasting-with-python/
+
+    Required Attributes
+    ----------
+    upstream_tasks : luigi.Task
+        Array of tasks whose output we use here.
+        Output should be csv data files.
+        First task in the array is predicted using others as exogenous inflows.
+    outfile_name : file path string
+        Path to output file.
+    """
 
     def requires(self):
-        return [
-            TrendsInterpolation(),
-            Resample2DailyInterpolated()
-        ]
+        return [task() for task in self.upstream_tasks]
 
     def output(self):
+        return luigi.LocalTarget(self.outfile_name)
         # return luigi.LocalTarget(config.data_dir + "ARIMAX_Trends2Price.pickle")
-        return luigi.LocalTarget(config.plot_dir + 'ARIMAX_test_dynamicPrediction.png')
+        # return luigi.LocalTarget(config.plot_dir + 'ARIMAX_test_dynamicPrediction.png')
 
     def run(self):
         trends_dta = pandas.read_csv(self.input()[0].path, names=['date','trends'], header=0)
