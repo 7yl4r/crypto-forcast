@@ -37,22 +37,46 @@ source ./virtualEnv/bin/activate
 3. Time-series shall be sampled or interpolated to daily frequency.
 
 # Ideas
+*legend*
+* :hourglass: in-progress
+* :white_check_mark: done
+* :no_entry_sign: fail
+
 ## ingest
 Hmm... what data to ingest... How about:
-1. historical self-values (eg autoregression)
+1. :hourglass: historical self-values (eg autoregression)
     1. http://api.bitcoincharts.com/v1/csv/
     2. more suggestions on [this SO answer](https://stackoverflow.com/questions/16143266/get-bitcoin-historical-data)
-2. historical values of other crypto-currencies (CCF might be useful here if one lags the other)
-3. [google trends data](https://trends.google.com/trends/explore?q=bitcoin,litecoin,ethereum) using
+2. :hourglass: historical values of other crypto-currencies (CCF might be useful here if one lags the other)
+3. :hourglass: [google trends data](https://trends.google.com/trends/explore?q=bitcoin,litecoin,ethereum) using
     1. [pytrends](https://github.com/GeneralMills/pytrends)
     2. [unofficial trends api](https://github.com/suryasev/unofficial-google-trends-api)
     3. [trends csv downloader](https://github.com/pedrofaustino/google-trends-csv-downloader)
 4. sentiment analysis
     1. [twitter ingest](https://stackoverflow.com/questions/21579999/count-number-of-results-for-a-particular-word-on-twitter-api-v1-1) (NLP sold separately)
-    2.
+5. stack overflow activity ( ethereum / monero communities or question volumes on s.o. itself ) 
+6. crypto-mining hardware release schedules
+7. crypto-mining profitablity recomendation calculators
+    1. like [coinwarz](https://www.coinwarz.com/cryptocurrency) profit ratio charts
 
+### Exogenous Evaluation Methods
+1. granger causality test (and similar)
+    1. [statsmodels grangercausalitytests](http://www.statsmodels.org/dev/generated/statsmodels.tsa.stattools.grangercausalitytests.html)
+    2. [pretty causality matrix from nitime](http://nipy.org/nitime/examples/granger_fmri.html)
+    3. [granger causality on non-stationary data](http://davegiles.blogspot.no/2011/04/testing-for-granger-causality.html)
+    4. [other causality predictor(s) from kaggle cause-effect-pairs](https://www.kaggle.com/c/cause-effect-pairs/discussion/5702)
+    5. [MVGC method)](http://erramuzpe.github.io/C-PAC/blog/2015/06/10/multivariate-granger-causality-in-python-for-fmri-timeseries-analysis/)
+2. :hourglass: cross-correlation function
+    
 ## pre-processing
 1. USD values could be adjusted using [CPI values](http://www.usinflationcalculator.com/inflation/consumer-price-index-and-annual-percent-changes-from-1913-to-2008/) from [bls.gov data](https://download.bls.gov/pub/time.series/cu/)
+
+## Analysis
+1. :white_check_mark: frequency analysis
+    1. :white_check_mark: FFT
+    2. :white_check_mark: seasonal decomposition
+    3. :hourglass: ACF & PACF
+
 
 ## Modeling
 Time series models... For these I like:
@@ -69,7 +93,7 @@ Time series models... For these I like:
         1. [CasiaFan](https://github.com/CasiaFan/time_seires_prediction_using_lstm)
 2. Fuzzy Time Series Predictions
     1. [asiviero](https://github.com/asiviero/fuzzy_time_series_predictor)
-3. good ol' fashioned autoregressors
-    1. my old [behavAR](https://github.com/7yl4r/BehavAR) project
+3. :hourglass: good ol' fashioned autoregressors
+    1. :white_check_mark: my old [behavAR](https://github.com/7yl4r/BehavAR) project
         1. also see [this script](https://github.com/PIELab/interventionViz/blob/master/behavARX.py)
-4. frequency analysis
+    2. :hourglass: ARIMA / ARIMAX
