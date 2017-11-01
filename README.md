@@ -97,3 +97,5 @@ Time series models... For these I like:
     1. :white_check_mark: my old [behavAR](https://github.com/7yl4r/BehavAR) project
         1. also see [this script](https://github.com/PIELab/interventionViz/blob/master/behavARX.py)
     2. :hourglass: ARIMA / ARIMAX
+        1. :hourglass: statsmodels ARIMAX (SARIMAX?)
+        2. [fb prophet ARIMA / exp smoothing](https://research.fb.com/prophet-forecasting-at-scale/)
