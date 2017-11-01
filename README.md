@@ -18,6 +18,24 @@ source ./virtualEnv/bin/activate
 3. attempt to model on (manually curated) new data
 4. implement ingestion script once model fits reasonably well
 
+# Points of Organization:
+## Task Classes
+1. Subdirs of `CryptoForecast` each represent different data sources.
+2. Each subdir contains a hierarchy organized by pipeline stage. The stages are:
+    1. ingest      : incoming data downloads
+    2. preprocess  : steps taken to massage data into proper format
+    3. analyze     : standard data summary methods to inform model selection
+    4. model       : creation & testing of various models
+    5. forecast    : use of models to predict future values ()
+    6. action-plan : use of forecasts to plan actions (buy/sell)
+3. Common task base/abstract classes are in `./common/`
+4. Tasks which extend common tasks should be named {DATA_SOURCE}{PARENT_TASK}; example: `BTC + Seasonal = BTCSeasonal`.
+
+## Data
+1. `LocalTarget` outputs should have file names similar to their task classes.
+2. all `LocalTarget`s shall be placed under `./data`
+3. Time-series shall be sampled or interpolated to daily frequency.
+
 # Ideas
 ## ingest
 Hmm... what data to ingest... How about:
