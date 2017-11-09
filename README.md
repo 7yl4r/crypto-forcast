@@ -99,3 +99,9 @@ Time series models... For these I like:
     2. :hourglass: ARIMA / ARIMAX
         1. :hourglass: statsmodels ARIMAX (SARIMAX?)
         2. [fb prophet ARIMA / exp smoothing](https://research.fb.com/prophet-forecasting-at-scale/)
+
+## Action-plan
+1. backtesting
+    1. [pyAlgoTrade](http://gbeced.github.io/pyalgotrade/)
+2. exchange api
+    1. [ccxt](https://github.com/ccxt/ccxt)
