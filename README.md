@@ -54,7 +54,7 @@ Hmm... what data to ingest... How about:
     3. [trends csv downloader](https://github.com/pedrofaustino/google-trends-csv-downloader)
 4. sentiment analysis
     1. [twitter ingest](https://stackoverflow.com/questions/21579999/count-number-of-results-for-a-particular-word-on-twitter-api-v1-1) (NLP sold separately)
-5. stack overflow activity ( ethereum / monero communities or question volumes on s.o. itself ) 
+5. stack overflow activity ( ethereum / monero communities or question volumes on s.o. itself )
 6. crypto-mining hardware release schedules
 7. crypto-mining profitablity recomendation calculators
     1. like [coinwarz](https://www.coinwarz.com/cryptocurrency) profit ratio charts
@@ -67,16 +67,17 @@ Hmm... what data to ingest... How about:
     4. [other causality predictor(s) from kaggle cause-effect-pairs](https://www.kaggle.com/c/cause-effect-pairs/discussion/5702)
     5. [MVGC method)](http://erramuzpe.github.io/C-PAC/blog/2015/06/10/multivariate-granger-causality-in-python-for-fmri-timeseries-analysis/)
 2. :hourglass: cross-correlation function
-    
+
 ## pre-processing
 1. USD values could be adjusted using [CPI values](http://www.usinflationcalculator.com/inflation/consumer-price-index-and-annual-percent-changes-from-1913-to-2008/) from [bls.gov data](https://download.bls.gov/pub/time.series/cu/)
+2. generate stationary series for modeling
+    1. :hourglass: differencing
 
 ## Analysis
 1. :white_check_mark: frequency analysis
     1. :white_check_mark: FFT
     2. :white_check_mark: seasonal decomposition
     3. :hourglass: ACF & PACF
-
 
 ## Modeling
 Time series models... For these I like:
