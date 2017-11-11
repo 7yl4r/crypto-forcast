@@ -21,11 +21,12 @@ import config
 from btc.IngestPrices import IngestPrices  # ->
 from btc.preprocess.DecompressPrices import DecompressPrices  # ->
 from btc.preprocess.GroupByTimeStamp import GroupByTimeStamp  # ->
-from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
+from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated # ->
+from btc.preprocess.BTCMakeStationary import BTCMakeStationary
 
 from btc.preprocess.PlotRawData import PlotRawData  # <- GroupByTimeStamp
 
-from btc.model.PlotInflows import PlotInflows
+from btc.analyze.PlotInflows import PlotInflows
 from btc.analyze.BTCSeasonal import BTCSeasonal
 from btc.analyze.BTCFFT import BTCFFT
 
