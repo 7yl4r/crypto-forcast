@@ -35,6 +35,7 @@ from btc.model.BTCARIMAX import BTCARIMAX
 # === google trends
 from googleTrends.IngestGoogleTrends import IngestGoogleTrends  # ->
 from googleTrends.preprocess.TrendsInterpolation import TrendsInterpolation
+from googleTrends.preprocess.GTrendsMakeStationary import GTrendsMakeStationary
 
 from googleTrends.analyze.TrendsSeasonal import TrendsSeasonal
 
