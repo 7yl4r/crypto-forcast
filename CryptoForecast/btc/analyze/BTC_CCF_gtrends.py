@@ -13,7 +13,7 @@ from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
 from plotters.ccf import plotCCF
 
 
-class CCF_Trends2Price(luigi.Task):
+class BTC_CCF_gtrends(luigi.Task):
 
     def requires(self):
         return [
@@ -22,7 +22,7 @@ class CCF_Trends2Price(luigi.Task):
         ]
 
     def output(self):
-        return luigi.LocalTarget(config.plot_dir+"analyze/CCF_trends2price.png")
+        return luigi.LocalTarget(config.data_dir+"BTC_CCF_gtrends.png")
 
     def run(self):
         trends_dta = pandas.read_csv(self.input()[0].path, names=['date','trends'], header=0)

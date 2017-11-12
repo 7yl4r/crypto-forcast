@@ -30,6 +30,7 @@ from btc.analyze.PlotInflows import PlotInflows
 from btc.analyze.BTCSeasonal import BTCSeasonal
 from btc.analyze.BTCFFT import BTCFFT
 
+from btc.analyze.BTC_CCF_gtrends import BTC_CCF_gtrends
 from btc.model.BTCARIMAX import BTCARIMAX
 
 # === google trends
@@ -42,9 +43,6 @@ from googleTrends.analyze.TrendsSeasonal import TrendsSeasonal
 # === kaggle dataset
 from kaggle.analyze.KaggleSeasonal import KaggleSeasonal
 from kaggle.analyze.KaggleFFT import KaggleFFT
-
-# TODO: port these remaining classes to new org structure:
-from vizualize.CCF_Trends2Price import CCF_Trends2Price
 
 if __name__ == '__main__':
     luigi.run()
