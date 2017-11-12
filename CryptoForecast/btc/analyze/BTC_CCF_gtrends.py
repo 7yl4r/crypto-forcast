@@ -8,8 +8,8 @@ import pandas
 import matplotlib.pyplot as plt
 
 import config
-from googleTrends.preprocess.TrendsInterpolation import TrendsInterpolation
-from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated
+from googleTrends.preprocess.GTrendsMakeStationary import GTrendsMakeStationary
+from btc.preprocess.BTCMakeStationary import BTCMakeStationary
 from plotters.ccf import plotCCF
 
 
@@ -17,15 +17,15 @@ class BTC_CCF_gtrends(luigi.Task):
 
     def requires(self):
         return [
-            TrendsInterpolation(),
-            Resample2DailyInterpolated()
+            GTrendsMakeStationary(),
+            BTCMakeStationary()
         ]
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir+"BTC_CCF_gtrends.png")
+        return luigi.LocalTarget(config.data_dir+"analyze/BTC_CCF_gtrends.png")
 
     def run(self):
-        trends_dta = pandas.read_csv(self.input()[0].path, names=['date','trends'], header=0)
+        trends_dta = pandas.read_csv(self.input()[0].path, names=['date','value'], header=0)
         price_dta  = pandas.read_csv(self.input()[1].path, names=['date','price'], header=0)
 
         merged_inner = pandas.merge(
@@ -35,6 +35,6 @@ class BTC_CCF_gtrends(luigi.Task):
 
         plotCCF(
             merged_inner['price'].astype('float64') ,
-            merged_inner['trends'].astype('float64'),
+            merged_inner['value'].astype('float64'),
             self.output().path
         )
