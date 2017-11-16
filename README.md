@@ -58,6 +58,7 @@ Hmm... what data to ingest... How about:
 6. crypto-mining hardware release schedules
 7. crypto-mining profitablity recomendation calculators
     1. like [coinwarz](https://www.coinwarz.com/cryptocurrency) profit ratio charts
+8. mean/median transaction fees like [bitinfocharts](https://bitinfocharts.com/comparison/bitcoin-transactionfees.html)
 
 ### Exogenous Evaluation Methods
 1. granger causality test (and similar)
