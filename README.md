@@ -60,6 +60,8 @@ Hmm... what data to ingest... How about:
     1. like [coinwarz](https://www.coinwarz.com/cryptocurrency) profit ratio charts
 8. mean/median transaction fees like [bitinfocharts](https://bitinfocharts.com/comparison/bitcoin-transactionfees.html)
 9. Hash rates & difficulties like [this from bitcoinwisdom](https://bitcoinwisdom.com/bitcoin/difficulty)
+10. # of pending transactions 
+    1. [etherscan.io](https://etherscan.io/chart/pendingtx)
 
 ### Exogenous Evaluation Methods
 1. granger causality test (and similar)
