@@ -35,6 +35,7 @@ from btc.model.BTCARIMAX import BTCARIMAX
 
 # === eth
 from eth.IngestPrices import IngestPricesETH
+from eth.preprocess.PlotRawData import PlotRawDataETH
 
 # === google trends
 from googleTrends.IngestGoogleTrends import IngestGoogleTrends  # ->
