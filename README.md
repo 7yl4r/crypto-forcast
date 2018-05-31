@@ -7,7 +7,7 @@ The idea here is pretty simple:
 
 # Usage:
 ```bash
-virtualenv venv --python=python2.7
+python3 -m venv ./venv
 source venv/bin/activate
 pip install -r requirements.txt
 luigid  # to start the scheduler
