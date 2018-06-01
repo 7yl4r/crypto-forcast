@@ -3,9 +3,10 @@ Reads in Ethereum price data from ingest source.
 Data from etherscan.io.
 """
 
+import config
 import luigi
 import requests
-import config
+
 
 class IngestPricesETH(luigi.Task):
     def requires(self):
@@ -19,7 +20,7 @@ class IngestPricesETH(luigi.Task):
 
         r = requests.get(src, stream=True)
 
-        with self.output().open('w') as f:
+        with open(self.output().path, 'wb') as f:
             for chunk in r.iter_content(chunk_size=1024):
                 if chunk:
                     f.write(chunk)
