@@ -3,9 +3,10 @@ Reads in Ethereum price data from ingest source.
 Data from etherscan.io.
 """
 
+import config
 import luigi
 import requests
-import config
+
 
 class IngestPricesETH(luigi.Task):
     def requires(self):
