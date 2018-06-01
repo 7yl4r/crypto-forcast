@@ -19,7 +19,7 @@ class IngestPricesETH(luigi.Task):
 
         r = requests.get(src, stream=True)
 
-        with self.output().open('w') as f:
+        with open(self.output().path, 'wb') as f:
             for chunk in r.iter_content(chunk_size=1024):
                 if chunk:
                     f.write(chunk)
