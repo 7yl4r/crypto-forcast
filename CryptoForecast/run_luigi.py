@@ -18,7 +18,7 @@ import config
 # === Task Classes ===================================================
 # ====================================================================
 # === btc
-from btc.IngestPrices import IngestPrices  # ->
+from btc.IngestPrices import IngestPrices # ->
 from btc.preprocess.DecompressPrices import DecompressPrices  # ->
 from btc.preprocess.GroupByTimeStamp import GroupByTimeStamp  # ->
 from btc.preprocess.Resample2DailyInterpolated import Resample2DailyInterpolated # ->
@@ -32,6 +32,10 @@ from btc.analyze.BTCFFT import BTCFFT
 
 from btc.analyze.BTC_CCF_gtrends import BTC_CCF_gtrends
 from btc.model.BTCARIMAX import BTCARIMAX
+
+# === eth
+from eth.IngestPrices import IngestPricesETH
+from eth.preprocess.PlotRawData import PlotRawDataETH
 
 # === google trends
 from googleTrends.IngestGoogleTrends import IngestGoogleTrends  # ->
