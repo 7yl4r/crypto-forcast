@@ -7,12 +7,12 @@ import matplotlib.pyplot as plt
 import pandas
 
 import config
-from eth.IngestPrices import IngestPricesETH
+from eth.IngestPricesHistorical import IngestPricesHistoricalETH
 
 
 class PlotRawDataETH(luigi.Task):
     def requires(self):
-        return [IngestPricesETH()]
+        return [IngestPricesHistoricalETH()]
 
     def output(self):
         return luigi.LocalTarget(config.data_dir+"preprocess/eth_rawdata.png")

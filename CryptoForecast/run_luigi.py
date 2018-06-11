@@ -34,8 +34,10 @@ from btc.analyze.BTC_CCF_gtrends import BTC_CCF_gtrends
 from btc.model.BTCARIMAX import BTCARIMAX
 
 # === eth
-from eth.IngestPrices import IngestPricesETH
+from eth.IngestPricesHistorical import IngestPricesHistoricalETH
 from eth.preprocess.PlotRawData import PlotRawDataETH
+
+from eth.IngestPricesRealtime import IngestPricesRealtimeETH
 
 # === google trends
 from googleTrends.IngestGoogleTrends import IngestGoogleTrends  # ->
