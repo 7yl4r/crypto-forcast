@@ -50,5 +50,9 @@ from googleTrends.analyze.TrendsSeasonal import TrendsSeasonal
 from kaggle.analyze.KaggleSeasonal import KaggleSeasonal
 from kaggle.analyze.KaggleFFT import KaggleFFT
 
+# === trading
+from trade.strategy.BollingerBands import BollingerBands
+from trade.backtest.Backtest import Backtest
+
 if __name__ == '__main__':
     luigi.run()
