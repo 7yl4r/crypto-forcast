@@ -8,11 +8,11 @@ import matplotlib.pyplot as plt
 import datetime
 
 import config
-from eth.IngestPricesHistorical import IngestPricesHistoricalETH
+from eth.IngestPricesHistoricalBTC import IngestPricesHistoricalETHBTC
 
 class BollingerBands(luigi.Task):
     def requires(self):
-        return [IngestPricesHistoricalETH()]
+        return [IngestPricesHistoricalETHBTC()]
 
     def output(self):
         return luigi.LocalTarget(config.data_dir + "trading/trades.csv")
@@ -21,8 +21,6 @@ class BollingerBands(luigi.Task):
         # Read input
         dta = pd.read_csv(
           self.input()[0].path,
-          names=['Date(UTC)', 'UnixTimeStamp', 'Value'],
-          usecols=['Date(UTC)','Value'],
           parse_dates=['Date(UTC)'],
           converters={'Value': float},
           skiprows=1 # skip header row
