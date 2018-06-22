@@ -3,9 +3,10 @@ Reads in historical Ethereum price data.
 Data from etherscan.io.
 """
 
+import config
 import luigi
 import requests
-import config
+
 
 class IngestPricesHistoricalETHUSD(luigi.Task):
     def requires(self):
