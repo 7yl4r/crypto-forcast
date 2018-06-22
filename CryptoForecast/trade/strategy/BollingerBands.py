@@ -18,7 +18,9 @@ class BollingerBands(luigi.Task):
         return [IngestPricesHistoricalETHBTC()]
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir + "trading/trades.csv")
+        out = luigi.LocalTarget(config.data_dir + "trading/trades.csv")
+        out.makedirs()
+        return out
 
     def run(self):
         if (config.ewmInterval < config.fidelity):

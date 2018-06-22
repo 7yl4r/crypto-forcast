@@ -13,7 +13,9 @@ class IngestPricesHistoricalETHUSD(luigi.Task):
         return []
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir+"ingest/eth_usd_historical.csv")
+        out = luigi.LocalTarget(config.data_dir + "ingest/eth_usd_historical.csv")
+        out.makedirs()
+        return out
 
     def run(self):
         src = "https://etherscan.io/chart/etherprice?output=csv"

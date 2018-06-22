@@ -14,7 +14,9 @@ class IngestPricesHistoricalETHBTC(luigi.Task):
         return []
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir+"ingest/eth_btc_historical.csv")
+        out = luigi.LocalTarget(config.data_dir + "ingest/eth_btc_historical.csv")
+        out.makedirs()
+        return out
 
     def run(self):
         src = "https://poloniex.com/public?command=returnChartData&currencyPair=BTC_ETH&start=1435699200&end=9999999999&period=" + str(config.fidelity)

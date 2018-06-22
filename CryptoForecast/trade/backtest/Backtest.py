@@ -27,7 +27,7 @@ class Backtest(luigi.Task):
           converters={'Value': float},
         )
 
-        assets = [{'btcHoldings': 10, 'ethHoldings': 0, 'netHoldings': 10}]
+        assets = [{'btcHoldings': config.assets['btc'], 'ethHoldings': config.assets['eth'], 'netHoldings': 0}]
 
         for index, row in dta.iterrows():
             lastRow = assets[-1]
