@@ -55,5 +55,7 @@ from kaggle.analyze.KaggleFFT import KaggleFFT
 from trade.strategy.BollingerBands import BollingerBands
 from trade.backtest.Backtest import Backtest
 
+from trade.plotters.Bollinger import PlotBollinger
+
 if __name__ == '__main__':
     luigi.run()
