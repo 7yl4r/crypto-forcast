@@ -17,7 +17,7 @@ class IngestPricesHistoricalETHBTC(luigi.Task):
         return luigi.LocalTarget(config.data_dir+"ingest/eth_btc_historical.csv")
 
     def run(self):
-        src = "https://poloniex.com/public?command=returnChartData&currencyPair=BTC_ETH&start=1435699200&end=9999999999&period=86400"
+        src = "https://poloniex.com/public?command=returnChartData&currencyPair=BTC_ETH&start=1435699200&end=9999999999&period=" + str(config.fidelity)
 
         r = requests.get(src, stream=True)
         dta = pd.DataFrame(r.json())
@@ -27,4 +27,4 @@ class IngestPricesHistoricalETHBTC(luigi.Task):
         dta = dta[['Date(UTC)', 'close']]
         dta = dta.rename(columns={'close': 'Value'})
 
-        dta.to_csv(self.output().path)
+        dta.to_csv(self.output().path, index=False)

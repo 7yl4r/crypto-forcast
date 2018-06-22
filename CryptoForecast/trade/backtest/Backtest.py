@@ -27,26 +27,26 @@ class Backtest(luigi.Task):
           converters={'Value': float},
         )
 
-        assets = [{'usdHoldings': 1000, 'ethHoldings': 0, 'netHoldings': 1000}]
+        assets = [{'btcHoldings': 10, 'ethHoldings': 0, 'netHoldings': 10}]
 
         for index, row in dta.iterrows():
             lastRow = assets[-1]
-            assets.append({'usdHoldings': lastRow['usdHoldings'], 'ethHoldings': lastRow['ethHoldings']})
+            assets.append({'btcHoldings': lastRow['btcHoldings'], 'ethHoldings': lastRow['ethHoldings']})
 
             if (row['Trade'] > 0):
                 # buy
-                if (row['Value'] * row['Trade'] <= assets[-1]['usdHoldings']):
+                if (row['Value'] * row['Trade'] <= assets[-1]['btcHoldings']):
                     assets[-1]['ethHoldings'] += row['Trade']
-                    assets[-1]['usdHoldings'] -= row['Value']
+                    assets[-1]['btcHoldings'] -= row['Value']
 
             elif (row['Trade'] < 0):
                 # sell
                 if (abs(row['Trade']) <= assets[-1]['ethHoldings']):
                     assets[-1]['ethHoldings'] -= abs(row['Trade'])
-                    assets[-1]['usdHoldings'] += row['Value']
+                    assets[-1]['btcHoldings'] += row['Value']
 
             # Calculate net value of holdings
-            assets[-1]['netHoldings'] = assets[-1]['usdHoldings'] + assets[-1]['ethHoldings'] * dta['Value'][index]
+            assets[-1]['netHoldings'] = assets[-1]['btcHoldings'] + assets[-1]['ethHoldings'] * dta['Value'][index]
 
         # Convert List to DataFrame
         assets = pd.DataFrame(assets)
@@ -55,4 +55,4 @@ class Backtest(luigi.Task):
         dta = dta.join(assets)
 
         # Write to CSV
-        dta.to_csv(self.output().path)
+        dta.to_csv(self.output().path, index=False)

@@ -1,5 +1,8 @@
 """
 Strategy for trading with Bollinger Band indicators.
+Parameters:
+- ewmInterval: interval to be used for calculating moving averages
+- tradeAmount: amount, in ETH, to trade every time
 """
 
 import luigi
@@ -18,38 +21,40 @@ class BollingerBands(luigi.Task):
         return luigi.LocalTarget(config.data_dir + "trading/trades.csv")
 
     def run(self):
+        if (config.ewmInterval < config.fidelity):
+            raise ValueError('config.ewmInterval must be more than or equal to config.fidelity')
+
         # Read input
         dta = pd.read_csv(
           self.input()[0].path,
           parse_dates=['Date(UTC)'],
-          converters={'Value': float},
-          skiprows=1 # skip header row
+          converters={'Value': float}
         )
 
-        # Calculate bands
-        dta['30 Day EMA'] = dta['Value'].ewm(span=30).mean()
-        dta['30 Day STD'] = dta['Value'].ewm(span=30).std()
-        dta['Upper Band'] = dta['30 Day EMA'] + (dta['30 Day STD'] * 2)
-        dta['Lower Band'] = dta['30 Day EMA'] - (dta['30 Day STD'] * 2)
+        ###################
+        # Calculate bands #
+        ###################
+
+        # Get interval. Example: ewmInterval is 86400 * 20 (20 days),
+        # fidelity is 86400 (1 day). Resulting interval is 20.
+        interval = config.ewmInterval / config.fidelity
+
+        dta['EMA'] = dta['Value'].ewm(span=interval).mean()
+        dta['STD'] = dta['Value'].ewm(span=interval).std()
+        dta['Upper Band'] = dta['EMA'] + (dta['STD'] * config.stdK)
+        dta['Lower Band'] = dta['EMA'] - (dta['STD'] * config.stdK)
 
         # Iterate over all rows, adding trade data
         trades = []
         for index, row in dta.iterrows():
             if (row['Value'] <= row['Lower Band']):
-                trades.append(1)
+                trades.append(config.tradeAmount)
             elif (row['Value'] >= row['Upper Band']):
-                trades.append(-1)
+                trades.append(-config.tradeAmount)
             else:
                 trades.append(0)
 
         dta['Trade'] = trades
 
         # Export
-        dta.to_csv(self.output().path)
-        '''
-        print(dta)
-        dta[['Value', '30 Day MA', 'Upper Band', 'Lower Band']].plot(figsize=(12,6))
-        plt.title('30 Day Bollinger Band for Facebook')
-        plt.ylabel('Price (USD)')
-        plt.show();
-        '''
+        dta.to_csv(self.output().path, index=False)
