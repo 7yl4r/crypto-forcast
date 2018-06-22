@@ -34,7 +34,8 @@ from btc.analyze.BTC_CCF_gtrends import BTC_CCF_gtrends
 from btc.model.BTCARIMAX import BTCARIMAX
 
 # === eth
-from eth.IngestPricesHistorical import IngestPricesHistoricalETH
+from eth.IngestPricesHistoricalUSD import IngestPricesHistoricalETHUSD
+from eth.IngestPricesHistoricalBTC import IngestPricesHistoricalETHBTC
 from eth.preprocess.PlotRawData import PlotRawDataETH
 
 from eth.IngestPricesRealtime import IngestPricesRealtimeETH
@@ -49,6 +50,12 @@ from googleTrends.analyze.TrendsSeasonal import TrendsSeasonal
 # === kaggle dataset
 from kaggle.analyze.KaggleSeasonal import KaggleSeasonal
 from kaggle.analyze.KaggleFFT import KaggleFFT
+
+# === trading
+from trade.strategy.BollingerBands import BollingerBands
+from trade.backtest.Backtest import Backtest
+
+from trade.plotters.Bollinger import PlotBollinger
 
 if __name__ == '__main__':
     luigi.run()
