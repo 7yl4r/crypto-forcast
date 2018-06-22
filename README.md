@@ -28,6 +28,9 @@ fig_size = (12, 8)
 tradeAmount = 1
 fidelity = 86400 # in seconds
 
+# Backtesting
+assets = {'usd': 0, 'btc': 10, 'eth': 0}
+
 # Bollinger strategy
 ewmInterval = 86400 * 20 # in seconds
 stdK = 1.2
