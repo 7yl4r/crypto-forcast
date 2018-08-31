@@ -14,6 +14,28 @@ luigid  # to start the scheduler
 python CryptoForecast/run_luigi.py MyTaskName
 ```
 
+## Sample config:
+```python
+"""
+Configuration options
+"""
+
+# Common
+data_dir = "data-dir"
+plot_dir = "plot-dir"
+fig_size = (12, 8)
+
+tradeAmount = 1
+fidelity = 86400 # in seconds
+
+# Backtesting
+assets = {'usd': 0, 'btc': 10, 'eth': 0}
+
+# Bollinger strategy
+ewmInterval = 86400 * 20 # in seconds
+stdK = 1.2
+```
+
 # Implementation plan:
 1. pick a primary model
 2. reproduce model results on test set

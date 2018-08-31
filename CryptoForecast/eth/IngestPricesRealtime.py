@@ -24,7 +24,9 @@ class IngestPricesRealtimeETH(luigi.Task):
         return False
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir+"ingest/ethereum_realtime.csv")
+        out = luigi.LocalTarget(config.data_dir + "ingest/ethereum_realtime.csv")
+        out.makedirs()
+        return out
 
     def run(self):
         # if saved history exists
