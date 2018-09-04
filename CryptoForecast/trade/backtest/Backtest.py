@@ -18,12 +18,12 @@ class Backtest(luigi.Task):
 
     def run(self):
         # Read input
-        print(self.input()[0].path)
+        print(self.input()[0]["trades"].path)
         dta = pd.read_csv(
-            self.input()[0].path,
-            usecols=['Date(UTC)', 'Value', 'Trade'],
-            parse_dates=['Date(UTC)'],
-            converters={'Value': float},
+            self.input()[0]["trades"].path,
+            usecols=['date_time', 'price', 'trade'],
+            parse_dates=['date_time'],
+            converters={'price': float},
         )
 
         assets = [{
@@ -39,22 +39,22 @@ class Backtest(luigi.Task):
                 'ethHoldings': lastRow['ethHoldings']
             })
 
-            if (row['Trade'] > 0):
+            if (row['trade'] > 0):
                 # buy
-                if (row['Value'] * row['Trade'] <= assets[-1]['btcHoldings']):
-                    assets[-1]['ethHoldings'] += row['Trade']
-                    assets[-1]['btcHoldings'] -= row['Value']
+                if (row['price'] * row['trade'] <= assets[-1]['btcHoldings']):
+                    assets[-1]['ethHoldings'] += row['trade']
+                    assets[-1]['btcHoldings'] -= row['price']
 
-            elif (row['Trade'] < 0):
+            elif (row['trade'] < 0):
                 # sell
-                if (abs(row['Trade']) <= assets[-1]['ethHoldings']):
-                    assets[-1]['ethHoldings'] -= abs(row['Trade'])
-                    assets[-1]['btcHoldings'] += row['Value']
+                if (abs(row['trade']) <= assets[-1]['ethHoldings']):
+                    assets[-1]['ethHoldings'] -= abs(row['trade'])
+                    assets[-1]['btcHoldings'] += row['price']
 
             # Calculate net value of holdings
             assets[-1]['netHoldings'] = (
                 assets[-1]['btcHoldings'] +
-                assets[-1]['ethHoldings'] * dta['Value'][index]
+                assets[-1]['ethHoldings'] * dta['price'][index]
             )
 
         # Convert List to DataFrame
