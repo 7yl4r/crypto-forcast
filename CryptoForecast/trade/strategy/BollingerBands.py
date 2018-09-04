@@ -19,9 +19,17 @@ class BollingerBands(luigi.Task):
         return [IngestPricesHistoricalETHBTC()]
 
     def output(self):
-        out = luigi.LocalTarget(config.data_dir + "trading/trades.csv")
-        out.makedirs()
-        return out
+        outs = {
+            "trades": luigi.LocalTarget(
+                config.data_dir + "trading/trades_bollinger.csv"
+            ),
+            "bollinger": luigi.LocalTarget(
+                config.data_dir + "analyze/bollinger.csv"
+            )
+        }
+        for out in outs:
+            outs[out].makedirs()
+        return outs
 
     def run(self):
         if (config.ewmInterval < config.fidelity):
@@ -50,16 +58,28 @@ class BollingerBands(luigi.Task):
         dta['Lower Band'] = dta['EMA'] - (dta['STD'] * config.stdK)
 
         # Iterate over all rows, adding trade data
-        trades = []
+        trades = pd.DataFrame(columns=['date_time', 'price', 'trade'])
         for index, row in dta.iterrows():
             if (row['Value'] <= row['Lower Band']):
-                trades.append(config.tradeAmount)
+                trades = trades.append({
+                    "date_time": row['Date(UTC)'],
+                    "price": row['Value'],
+                    "trade": config.tradeAmount
+                }, ignore_index=True)
             elif (row['Value'] >= row['Upper Band']):
-                trades.append(-config.tradeAmount)
-            else:
-                trades.append(0)
-
-        dta['Trade'] = trades
+                trades = trades.append({
+                    "date_time": row['Date(UTC)'],
+                    "price": row['Value'],
+                    "trade": -config.tradeAmount
+                }, ignore_index=True)
+            # else:
+            #     trades = trades.append([
+            #         row['Date(UTC)'],
+            #         row['Value'],
+            #         0
+            #     ])
+        # dta['Trade'] = trades
 
         # Export
-        dta.to_csv(self.output().path, index=False)
+        dta.to_csv(self.output()["bollinger"].path, index=False)
+        trades.to_csv(self.output()["trades"].path, index=False)

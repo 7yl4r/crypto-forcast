@@ -20,7 +20,7 @@ class PlotBollinger(luigi.Task):
     def run(self):
         print("\nsaving plot to ", self.output().path, "...\n")
         dta = pandas.read_csv(
-          self.input()[0].path,
+          self.input()[0]["bollinger"].path,
           parse_dates=['Date(UTC)'],
           converters={'Value': float},
         )
