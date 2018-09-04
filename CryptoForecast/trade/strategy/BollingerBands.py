@@ -1,17 +1,18 @@
 """
 Strategy for trading with Bollinger Band indicators.
+
 Parameters:
 - ewmInterval: interval to be used for calculating moving averages
 - tradeAmount: amount, in ETH, to trade every time
+
 """
 
 import luigi
 import pandas as pd
-import matplotlib.pyplot as plt
-import datetime
 
 import config
 from eth.IngestPricesHistoricalBTC import IngestPricesHistoricalETHBTC
+
 
 class BollingerBands(luigi.Task):
     def requires(self):
@@ -24,13 +25,15 @@ class BollingerBands(luigi.Task):
 
     def run(self):
         if (config.ewmInterval < config.fidelity):
-            raise ValueError('config.ewmInterval must be more than or equal to config.fidelity')
+            raise ValueError(
+                'config.ewmInterval must be >= to config.fidelity'
+            )
 
         # Read input
         dta = pd.read_csv(
-          self.input()[0].path,
-          parse_dates=['Date(UTC)'],
-          converters={'Value': float}
+            self.input()[0].path,
+            parse_dates=['Date(UTC)'],
+            converters={'Value': float}
         )
 
         ###################
