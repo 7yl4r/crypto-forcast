@@ -25,7 +25,10 @@ trade_function_map = {
 
 
 class Backtest(luigi.Task):
-    trade_fn = luigi.EnumParameter(enum=TradeFunction)
+    trade_fn = luigi.EnumParameter(
+        enum=TradeFunction,
+        default=TradeFunction.b_cross
+    )
 
     def requires(self):
         return [BollingerBands()]
