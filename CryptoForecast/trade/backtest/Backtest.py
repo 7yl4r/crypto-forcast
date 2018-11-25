@@ -1,11 +1,12 @@
 """
-creates plot of raw data
 """
 
 import luigi
 import pandas as pd
 import enum
 from math import floor
+import random
+import sys
 
 import config
 from trade.strategy.BollingerBands import BollingerBands
@@ -35,18 +36,23 @@ class Backtest(luigi.Task):
         enum=TradeFunction,
         default=TradeFunction.b_cross
     )
+    rand_seed = luigi.IntParameter(
+        default=random.randrange(sys.maxsize)
+    )
 
     def requires(self):
         return [BollingerBands()]
 
     def output(self):
         return luigi.LocalTarget(
-            config.data_dir + "trading/backtest_{}.csv".format(
-                self.trade_fn
+            config.data_dir + "trading/backtest_{}_{}.csv".format(
+                self.trade_fn,
+                self.rand_seed
             )
         )
 
     def run(self):
+        random.seed(self.rand_seed)
         # Read input
         print(self.input()[0]["bollinger"].path)
         dta = pd.read_csv(
@@ -122,6 +128,6 @@ class Backtest(luigi.Task):
 
         # Convert List to DataFrame
         assets = pd.DataFrame(assets)
-
+        self.assets_df = assets  # for external access in MakeBaseline
         # Write to CSV
         assets.to_csv(self.output().path, index=False)
