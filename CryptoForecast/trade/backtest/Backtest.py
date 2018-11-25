@@ -4,6 +4,7 @@ creates plot of raw data
 
 import luigi
 import pandas as pd
+import enum
 
 import config
 from trade.strategy.BollingerBands import BollingerBands
@@ -11,12 +12,30 @@ from trade.backtest.fn.bollinger_crossing import bollinger_crossing
 from Wallet import Wallet
 
 
+class TradeFunction(enum.Enum):
+    # strings for use as parameters
+    b_cross = 'bollinger_crossing'
+    # b_cross_bal = bollinger_cross_balance
+
+trade_function_map = {
+    # then map strings to actual functions
+    # (because luigi breaks on funcion enums)
+    'bollinger_crossing': bollinger_crossing
+}
+
+
 class Backtest(luigi.Task):
+    trade_fn = luigi.EnumParameter(enum=TradeFunction)
+
     def requires(self):
         return [BollingerBands()]
 
     def output(self):
-        return luigi.LocalTarget(config.data_dir + "trading/backtest_data.csv")
+        return luigi.LocalTarget(
+            config.data_dir + "trading/backtest_{}.csv".format(
+                self.trade_fn
+            )
+        )
 
     def run(self):
         # Read input
@@ -45,14 +64,13 @@ class Backtest(luigi.Task):
         }]
 
         # Iterate over all rows, adding trade data
-        trade_fn = bollinger_crossing
         skip_first_n = 1  # allows calculations to catch up. must be > 1
         # trades = pd.DataFrame(columns=['date_time', 'price', 'trade'])
         for index, row in dta.iterrows():
             if index < skip_first_n:
                 continue
             # implied else
-            trade_amt = trade_fn(
+            trade_amt = trade_function_map[self.trade_fn.value](
                 price=row['Value'],
                 bollinger_lower=row['Lower Band'],
                 bollinger_upper=row['Upper Band']
