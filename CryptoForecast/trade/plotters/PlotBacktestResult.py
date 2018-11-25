@@ -30,7 +30,7 @@ class PlotBacktestResult(luigi.Task):
         dta = pandas.melt(
             dta,
             id_vars=['date_time'],
-            value_vars=['btcHoldings', 'ethHoldings'],
+            value_vars=['btc', 'eth'],
             var_name='coin',
             value_name='amount',
         )

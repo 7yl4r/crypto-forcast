@@ -8,7 +8,7 @@ import pandas as pd
 import config
 from trade.strategy.BollingerBands import BollingerBands
 from trade.backtest.fn.bollinger_crossing import bollinger_crossing
-
+from Wallet import Wallet
 
 class Backtest(luigi.Task):
     def requires(self):
@@ -35,11 +35,12 @@ class Backtest(luigi.Task):
             },
         )
 
+        wallet = Wallet()
         assets = [{
+            **wallet.asset_dict(),
             'date_time': dta['Date(UTC)'][0],
-            'btcHoldings': config.assets['btc'],
-            'ethHoldings': config.assets['eth'],
-            'netHoldings': 0
+            'netHoldings': 0,
+            'trade': 0,
         }]
 
         # Iterate over all rows, adding trade data
@@ -47,7 +48,6 @@ class Backtest(luigi.Task):
         skip_first_n = 1  # allows calculations to catch up. must be > 1
         # trades = pd.DataFrame(columns=['date_time', 'price', 'trade'])
         for index, row in dta.iterrows():
-            lastRow = assets[-1]
             if index < skip_first_n:
                 continue
             # implied else
@@ -69,28 +69,24 @@ class Backtest(luigi.Task):
             #     ])
         # trades.to_csv(self.output()["trades"].path, index=False)
 
+            if trade_amt != 0:
+                wallet.trade(
+                    {'btc': - trade_amt},
+                    {'eth': - trade_amt / row['Value']},
+                )
             assets.append({
                 "date_time": row['Date(UTC)'],
-                'btcHoldings': lastRow['btcHoldings'],
-                'ethHoldings': lastRow['ethHoldings']
+                **wallet.asset_dict(),
+                "trade": trade_amt
             })
 
-            if (trade_amt > 0):
-                # buy
-                if (row['Value'] * trade_amt <= assets[-1]['btcHoldings']):
-                    assets[-1]['ethHoldings'] += trade_amt
-                    assets[-1]['btcHoldings'] -= row['Value']
-
-            elif (trade_amt < 0):
-                # sell
-                if (abs(row['Value']) <= assets[-1]['ethHoldings']):
-                    assets[-1]['ethHoldings'] -= abs(trade_amt)
-                    assets[-1]['btcHoldings'] += row['Value']
+            # Convert values to exchange currency
+            assets[-1]['eth'] = assets[-1]['eth'] * row['Value']
 
             # Calculate net value of holdings
             assets[-1]['netHoldings'] = (
-                assets[-1]['btcHoldings'] +
-                assets[-1]['ethHoldings'] * row['Value']
+                assets[-1]['btc'] +
+                assets[-1]['eth']
             )
 
         # Convert List to DataFrame
