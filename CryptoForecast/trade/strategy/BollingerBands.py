@@ -20,9 +20,6 @@ class BollingerBands(luigi.Task):
 
     def output(self):
         outs = {
-            "trades": luigi.LocalTarget(
-                config.data_dir + "trading/trades_bollinger.csv"
-            ),
             "bollinger": luigi.LocalTarget(
                 config.data_dir + "analyze/bollinger.csv"
             )
@@ -57,29 +54,5 @@ class BollingerBands(luigi.Task):
         dta['Upper Band'] = dta['EMA'] + (dta['STD'] * config.stdK)
         dta['Lower Band'] = dta['EMA'] - (dta['STD'] * config.stdK)
 
-        # Iterate over all rows, adding trade data
-        trades = pd.DataFrame(columns=['date_time', 'price', 'trade'])
-        for index, row in dta.iterrows():
-            if (row['Value'] <= row['Lower Band']):
-                trades = trades.append({
-                    "date_time": row['Date(UTC)'],
-                    "price": row['Value'],
-                    "trade": config.tradeAmount
-                }, ignore_index=True)
-            elif (row['Value'] >= row['Upper Band']):
-                trades = trades.append({
-                    "date_time": row['Date(UTC)'],
-                    "price": row['Value'],
-                    "trade": -config.tradeAmount
-                }, ignore_index=True)
-            # else:
-            #     trades = trades.append([
-            #         row['Date(UTC)'],
-            #         row['Value'],
-            #         0
-            #     ])
-        # dta['Trade'] = trades
-
         # Export
         dta.to_csv(self.output()["bollinger"].path, index=False)
-        trades.to_csv(self.output()["trades"].path, index=False)
