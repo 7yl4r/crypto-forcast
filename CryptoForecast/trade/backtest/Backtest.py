@@ -45,7 +45,7 @@ class Backtest(luigi.Task):
         # Iterate over all rows, adding trade data
         trade_fn = bollinger_crossing
         skip_first_n = 1  # allows calculations to catch up. must be > 1
-        trades = pd.DataFrame(columns=['date_time', 'price', 'trade'])
+        # trades = pd.DataFrame(columns=['date_time', 'price', 'trade'])
         for index, row in dta.iterrows():
             lastRow = assets[-1]
             if index < skip_first_n:
@@ -56,11 +56,11 @@ class Backtest(luigi.Task):
                 bollinger_lower=row['Lower Band'],
                 bollinger_upper=row['Upper Band']
             )
-            if (trade_amt != 0):
-                trades = trades.append({
-                    "price": row['Value'],
-                    "trade": trade_amt
-                }, ignore_index=True)
+            # if (trade_amt != 0):
+            #     trades = trades.append({
+            #         "price": row['Value'],
+            #         "trade": trade_amt
+            #     }, ignore_index=True)
             # else:
             #     trades = trades.append([
             #         row['Date(UTC)'],
@@ -95,9 +95,6 @@ class Backtest(luigi.Task):
 
         # Convert List to DataFrame
         assets = pd.DataFrame(assets)
-
-        # Merge main DataFrame and assets
-        # dta = dta.join(assets)
 
         # Write to CSV
         assets.to_csv(self.output().path, index=False)

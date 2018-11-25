@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """
-Methods for running backtests
+collection of luigi tasks aimed at backtesting trading functions
 
 usage :
-
+-------
 `luigid`  # start the scheduler
 `python CryptoForecast/luigi_backtests.py MyTaskName`  # queue a task
 
