@@ -11,6 +11,7 @@ import config
 from trade.strategy.BollingerBands import BollingerBands
 from trade.backtest.fn.bollinger_crossing import bollinger_crossing
 from trade.backtest.fn.bollinger_cross_balanced import bollinger_cross_balanced
+from trade.backtest.fn.random import random as random_trade
 from Wallet import Wallet
 
 
@@ -18,12 +19,14 @@ class TradeFunction(enum.Enum):
     # strings for use as parameters
     b_cross = 'bollinger_crossing'
     b_cross_bal = 'bollinger_cross_balance'
+    random = 'random'
 
 trade_function_map = {
     # then map strings to actual functions
     # (because luigi breaks on funcion enums)
     'bollinger_crossing': bollinger_crossing,
     'bollinger_cross_balance': bollinger_cross_balanced,
+    'random': random_trade,
 }
 
 
