@@ -5,22 +5,25 @@ creates plot of raw data
 import luigi
 import pandas as pd
 import enum
+from math import floor
 
 import config
 from trade.strategy.BollingerBands import BollingerBands
 from trade.backtest.fn.bollinger_crossing import bollinger_crossing
+from trade.backtest.fn.bollinger_cross_balanced import bollinger_cross_balanced
 from Wallet import Wallet
 
 
 class TradeFunction(enum.Enum):
     # strings for use as parameters
     b_cross = 'bollinger_crossing'
-    # b_cross_bal = bollinger_cross_balance
+    b_cross_bal = 'bollinger_cross_balance'
 
 trade_function_map = {
     # then map strings to actual functions
     # (because luigi breaks on funcion enums)
-    'bollinger_crossing': bollinger_crossing
+    'bollinger_crossing': bollinger_crossing,
+    'bollinger_cross_balance': bollinger_cross_balanced,
 }
 
 
@@ -76,7 +79,9 @@ class Backtest(luigi.Task):
             trade_amt = trade_function_map[self.trade_fn.value](
                 price=row['Value'],
                 bollinger_lower=row['Lower Band'],
-                bollinger_upper=row['Upper Band']
+                bollinger_upper=row['Upper Band'],
+                max_trade=floor(assets[-1]['btc']*0.5),
+                eth_btc_ratio=(1+assets[-1]['eth']) / (1+assets[-1]['btc']),
             )
             # if (trade_amt != 0):
             #     trades = trades.append({
@@ -91,10 +96,11 @@ class Backtest(luigi.Task):
             #     ])
         # trades.to_csv(self.output()["trades"].path, index=False)
 
+            trade_penalty = .05
             if trade_amt != 0:
                 wallet.trade(
                     {'btc': - trade_amt},
-                    {'eth': - trade_amt / row['Value']},
+                    {'eth': - trade_amt / row['Value'] * (1 - trade_penalty)},
                 )
             assets.append({
                 "date_time": row['Date(UTC)'],

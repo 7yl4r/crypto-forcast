@@ -12,6 +12,8 @@ where MyTaskName is one of the imported task classes below
 examples:
 ---------
 python CryptoForecast/luigi_backtests.py PlotBacktestResult --BollingerBands-stdK 0.7
+
+python CryptoForecast/luigi_backtests.py PlotBacktestResult --BollingerBands-stdK 0.7 --Backtest-trade-fn b_cross_bal
 """
 import luigi
 import config
