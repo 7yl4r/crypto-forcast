@@ -15,13 +15,19 @@ from eth.IngestPricesHistoricalBTC import IngestPricesHistoricalETHBTC
 
 
 class BollingerBands(luigi.Task):
+    stdK = luigi.FloatParameter(
+        default=1.2
+    )
+
     def requires(self):
         return [IngestPricesHistoricalETHBTC()]
 
     def output(self):
         outs = {
             "bollinger": luigi.LocalTarget(
-                config.data_dir + "analyze/bollinger.csv"
+                config.data_dir + "analyze/bollinger_{}.csv".format(
+                    self.stdK
+                )
             )
         }
         for out in outs:
@@ -51,8 +57,8 @@ class BollingerBands(luigi.Task):
 
         dta['EMA'] = dta['Value'].ewm(span=interval).mean()
         dta['STD'] = dta['Value'].ewm(span=interval).std()
-        dta['Upper Band'] = dta['EMA'] + (dta['STD'] * config.stdK)
-        dta['Lower Band'] = dta['EMA'] - (dta['STD'] * config.stdK)
+        dta['Upper Band'] = dta['EMA'] + (dta['STD'] * self.stdK)
+        dta['Lower Band'] = dta['EMA'] - (dta['STD'] * self.stdK)
 
         # Export
         dta.to_csv(self.output()["bollinger"].path, index=False)

@@ -10,6 +10,7 @@ from trade.strategy.BollingerBands import BollingerBands
 from trade.backtest.fn.bollinger_crossing import bollinger_crossing
 from Wallet import Wallet
 
+
 class Backtest(luigi.Task):
     def requires(self):
         return [BollingerBands()]
@@ -29,9 +30,9 @@ class Backtest(luigi.Task):
             converters={
                 'Value': float,
                 'EMA': float,
-                'STD': float,
-                'Upper Band': float,
-                'Lower Band': float,
+                # 'STD': float,
+                # 'Upper Band': float,
+                # 'Lower Band': float,
             },
         )
 

@@ -2,12 +2,16 @@
 """
 collection of luigi tasks aimed at backtesting trading functions
 
-usage :
--------
+usage:
+------
 `luigid`  # start the scheduler
 `python CryptoForecast/luigi_backtests.py MyTaskName`  # queue a task
 
 where MyTaskName is one of the imported task classes below
+
+examples:
+---------
+python CryptoForecast/luigi_backtests.py PlotBacktestResult --BollingerBands-stdK 0.7
 """
 import luigi
 import config
