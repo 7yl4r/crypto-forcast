@@ -19,8 +19,11 @@ import luigi
 import config
 
 # === trading
+from trade.plotters.Bollinger import PlotBollinger
 from trade.backtest.Backtest import Backtest
 from trade.plotters.PlotBacktestResult import PlotBacktestResult
+
+from trade.backtest.MakeBaseline import MakeBaseline
 
 # TODO: + trading calculator task to backtest using a TaskParameter :
 # https://luigi.readthedocs.io/en/stable/api/luigi.parameter.html#luigi.parameter.TaskParameter

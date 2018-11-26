@@ -4,10 +4,10 @@ Outputs Bollinger trade data to plot
 
 import luigi
 import pandas
-import matplotlib.pyplot as plt
 
 import config
 from trade.strategy.BollingerBands import BollingerBands
+from plotters.ts_compare import ts_compare
 
 
 class PlotBollinger(luigi.Task):
@@ -25,13 +25,12 @@ class PlotBollinger(luigi.Task):
             converters={'Value': float},
         )
         print(dta.info())
-
-        dta.plot(x='Date(UTC)', y='Value')
-
-        dta[['Value', 'EMA', 'STD', 'Upper Band', 'Lower Band']].plot(
-            figsize=config.fig_size
+        ts_compare(
+            dta,
+            x_key='Date(UTC)',
+            y_key_list=['Value', 'EMA', 'STD', 'Upper Band', 'Lower Band'],
+            figsize=config.fig_size,
+            title='Bollinger Band for ETH/BTC',
+            ylabel='ETH/BTC Exchange Rate',
+            savefig=self.output().path
         )
-        plt.title('Bollinger Band for ETH/BTC')
-        plt.ylabel('ETH/BTC Exchange Rate')
-
-        plt.savefig(self.output().path, bbox_inches='tight')
