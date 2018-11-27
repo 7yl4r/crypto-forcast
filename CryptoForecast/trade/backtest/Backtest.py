@@ -70,18 +70,29 @@ class Backtest(luigi.Task):
             },
         )
 
+        assets_dta = self._get_backtest_assets(dta)
+        # Write to CSV
+        assets_dta.to_csv(self.output().path, index=False)
+
+    def _get_backtest_assets(self, price_dta, skip_first_n=1):
+        """
+        parameters:
+        -----------
+        skip_first_n : int
+            allows calculations to catch up. must be >= 1
+        """
+        assert skip_first_n > 0
         wallet = Wallet()
         assets = [{
             **wallet.asset_dict(),
-            'date_time': dta['Date(UTC)'][0],
+            'date_time': price_dta['Date(UTC)'][0],
             'netHoldings': 0,
             'trade': 0,
         }]
 
         # Iterate over all rows, adding trade data
-        skip_first_n = 1  # allows calculations to catch up. must be > 1
         # trades = pd.DataFrame(columns=['date_time', 'price', 'trade'])
-        for index, row in dta.iterrows():
+        for index, row in price_dta.iterrows():
             if index < skip_first_n:
                 continue
             # implied else
@@ -127,7 +138,4 @@ class Backtest(luigi.Task):
             )
 
         # Convert List to DataFrame
-        assets = pd.DataFrame(assets)
-        self.assets_df = assets  # for external access in MakeBaseline
-        # Write to CSV
-        assets.to_csv(self.output().path, index=False)
+        return pd.DataFrame(assets)
