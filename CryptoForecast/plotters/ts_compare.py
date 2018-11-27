@@ -25,6 +25,7 @@ def ts_compare(
     title=None,
     ylabel=None,
     figsize=(12, 8),
+    legend=True,
     **kwargs
 ):
     """
@@ -51,7 +52,7 @@ def ts_compare(
     elif y_key is not None:
         dta.plot(x=x_key, y=y_key)
     else:  # both None
-        dta.plot(x=x_key)
+        dta.plot(x=x_key, legend=legend)
 
     if title is not None:
         plt.title(title)
