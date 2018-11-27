@@ -44,12 +44,23 @@ class Backtest(luigi.Task):
         return [BollingerBands()]
 
     def output(self):
-        return luigi.LocalTarget(
-            config.data_dir + "trading/backtest_{}_{}.csv".format(
-                self.trade_fn,
-                self.rand_seed
+        if self._is_stochastic():
+            return luigi.LocalTarget(
+                config.data_dir + "trading/backtest_{}/{:06d}.csv".format(
+                    self.trade_fn,
+                    self.rand_seed
+                )
             )
-        )
+        else:
+            return luigi.LocalTarget(
+                config.data_dir + "trading/backtest_{}.csv".format(
+                    self.trade_fn
+                )
+            )
+
+    def _is_stochastic(self):
+        """Return true if selected trade_fn is stochastic"""
+        return self.trade_fn in [TradeFunction.random]
 
     def run(self):
         random.seed(self.rand_seed)
