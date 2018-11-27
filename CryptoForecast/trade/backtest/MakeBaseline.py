@@ -14,14 +14,17 @@ from plotters.ts_compare import ts_compare
 
 
 class MakeBaseline(luigi.Task):
+    n_rands = luigi.IntParameter(
+        default=10
+    )
+
     def requires(self):
         return [
             Backtest(
                 trade_fn=TradeFunction.random,
                 rand_seed=i
-            ) for i in range(2)
+            ) for i in range(self.n_rands)
         ]
-        # TODO: does this work?
 
     def output(self):
         basename = config.data_dir + "trading/backtest_baseline"
@@ -53,5 +56,6 @@ class MakeBaseline(luigi.Task):
         ts_compare(
             results,
             x_key='date_time',
-            savefig=self.output()['png'].path
+            savefig=self.output()['png'].path,
+            legend=False,
         )
