@@ -26,8 +26,11 @@ class AnalyzeBacktestResult(luigi.Task):
             "csv": luigi.LocalTarget(
                 basename + ".csv"
             ),
-            "png": luigi.LocalTarget(
-                basename + ".png"
+            "percentile.png": luigi.LocalTarget(
+                basename + "_percentile.png"
+            ),
+            "comparison.png": luigi.LocalTarget(
+                basename + "_comparison.png"
             )
         }
 
@@ -71,6 +74,15 @@ class AnalyzeBacktestResult(luigi.Task):
         ts_compare(
             results,
             x_key='date_time',
-            savefig=self.output()['png'].path,
+            savefig=self.output()['percentile.png'].path,
+            legend=False,
+        )
+
+        baseline_dta["Backtest Result"] = backtest_dta['netHoldings']
+        ts_compare(
+            baseline_dta,
+            x_key='date_time',
+            y_highlight_key='Backtest Result',
+            savefig=self.output()['comparison.png'].path,
             legend=False,
         )
