@@ -5,6 +5,7 @@ autobahn==18.5.2
 Automat==0.6.0
 backports-abc==0.5
 backports.functools-lru-cache==1.5
+enigma-catalyst==0.5.21
 certifi==2018.4.16
 cffi==1.11.5
 chardet==3.0.4

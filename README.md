@@ -6,6 +6,12 @@ The idea here is pretty simple:
 4. profit!
 
 # Usage:
+[catalyst install reqs](https://enigma.co/catalyst/install.html#gnu-linux-requirements):
+```bash
+sudo apt-get install libatlas-base-dev python-dev gfortran pkg-config libfreetype6-dev
+
+```
+
 ```bash
 python3 -m venv ./venv
 source venv/bin/activate
