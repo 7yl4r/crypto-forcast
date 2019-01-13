@@ -1,9 +1,4 @@
 """
-!!!
-WARN: This method has moved to plo7y (./cf2/plo7y/).
-      Don't use this one anymore.
-!!!
-
 Compare a set of N timeseries.
 
 Examples:
