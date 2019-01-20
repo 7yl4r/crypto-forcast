@@ -160,47 +160,47 @@ class DataTransformer(object):
         The order for the positive/negative values is: dark, medium, light.
         """
 
-    ret = []
-    x1 = []
-    one_step = x[1] - x[0]
+        ret = []
+        x1 = []
+        one_step = x[1] - x[0]
 
-    for i in range(self.num_band*2):
-        b = []
-        x_new = []
+        for i in range(self.num_band*2):
+            b = []
+            x_new = []
 
-        for idx, y1 in enumerate(y):
-            z = 0
-            has_crossover = False
+            for idx, y1 in enumerate(y):
+                z = 0
+                has_crossover = False
 
-            if self.is_still_positive(i):
-                if y1 > 0:
-                    z = self.calculate_new_y_value(i, y1)
-                    self.crossover_beginning(
-                        idx, x, one_step, b, x_new, y, self.smaller
-                    )
-                    has_crossover, new_x_value = self.crossover_ending(
-                        idx, x, one_step, y, self.smaller
-                    )
-            else:
-                if y1 < 0:
-                    z = self.calculate_new_y_value(i, abs(y1))
-                    self.crossover_beginning(
-                        idx, x, one_step, b, x_new, y, self.larger
-                    )
-                    has_crossover, new_x_value = self.crossover_ending(
-                        idx, x, one_step, y, self.larger
-                    )
+                if self.is_still_positive(i):
+                    if y1 > 0:
+                        z = self.calculate_new_y_value(i, y1)
+                        self.crossover_beginning(
+                            idx, x, one_step, b, x_new, y, self.smaller
+                        )
+                        has_crossover, new_x_value = self.crossover_ending(
+                            idx, x, one_step, y, self.smaller
+                        )
+                else:
+                    if y1 < 0:
+                        z = self.calculate_new_y_value(i, abs(y1))
+                        self.crossover_beginning(
+                            idx, x, one_step, b, x_new, y, self.larger
+                        )
+                        has_crossover, new_x_value = self.crossover_ending(
+                            idx, x, one_step, y, self.larger
+                        )
 
-            b.append(z)
-            x_new.append(x[idx])
-            if has_crossover:
-                x_new.append(new_x_value)
-                b.append(0)
+                b.append(z)
+                x_new.append(x[idx])
+                if has_crossover:
+                    x_new.append(new_x_value)
+                    b.append(0)
 
-        ret.append(b)
-        x1.append(x_new)
+            ret.append(b)
+            x1.append(x_new)
 
-    return x1, ret
+        return x1, ret
 
     # private methods
     def set_data(self, data):

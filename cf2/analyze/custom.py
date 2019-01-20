@@ -76,13 +76,14 @@ def horizon(perf_data):
     ))
     print('---da_x--------------------------')
     # assume all have same x
-    da_x = perf_data.loc[:, ['portfolio_value']].index.values
+    # da_x = perf_data.loc[:, ['portfolio_value']].index.values
+    da_x = range(len(perf_data.loc[:, ['portfolio_value']].index.values))
     print(da_x)
     print('---labels =?= da_y----------------')
     labels = varnames  # ['portfolio_value']
     print('{} =?= {}'.format(len(da_y), len(labels)))
 
-    plot = Horizon().run(da_x, da_y, labels, bands=3)
+    plot = Horizon().run(da_x, da_y, labels, bands=3, figsize=(9, 5))
 
     plot.subplots_adjust(left=0.07, right=0.998, top=0.99, bottom=0.01)
     plt.savefig("figures/horizon.png", dpi=DPI)
