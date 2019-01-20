@@ -3,7 +3,8 @@ Ingest, Model, Forecast, Repeat!
 """
 
 # Always prefer setuptools over distutils
-from setuptools import setup, find_packages
+from setuptools import setup
+from setuptools import find_packages
 # To use a consistent encoding
 from codecs import open
 from os import path
@@ -72,7 +73,7 @@ setup(
         'statsmodels',
         'matplotlib',
         'luigi',
-        'pytrends'
+        'pytrends',
     ],
 
     # List additional groups of dependencies here (e.g. development

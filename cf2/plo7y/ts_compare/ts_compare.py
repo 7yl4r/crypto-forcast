@@ -8,6 +8,7 @@ Examples:
 * temperatures in two locations
 
 TODO: use horizonplots for large N?
+TODO: use image for huge N?
 
 """
 import matplotlib.pyplot as plt

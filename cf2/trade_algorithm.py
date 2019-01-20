@@ -6,9 +6,10 @@ from catalyst.api import order
 # from catalyst.api import order_target_percent
 from catalyst.api import symbol
 from catalyst.api import record
+from catalyst.api import get_environment
 from catalyst.utils.run_algo import run_algorithm
 
-from analyze.dual_ma import analyze
+from analyze.custom import analyze
 
 ALGO_NAMESPACE = 'buy_the_dip_live'
 log = Logger('buy low sell high')
@@ -19,6 +20,14 @@ def initialize(context):
     context.ASSET_NAME = 'eth_btc'
     context.asset = symbol(context.ASSET_NAME)
 
+    context.TIMEPERIOD = 7
+    # TODO: scale these according to portfolio balance
+    context.RSI_SWING = 30  # how far on either side of RSI 50 before buy/sell
+    context.MIN_TRADE = 0.1
+    context.MAX_BUY = 0.5
+    context.MAX_SELL = context.MAX_BUY
+
+    # NOTE: I don't kwow what these are and what they do:
     context.TARGET_POSITIONS = 30
     context.PROFIT_TARGET = 0.1
     context.SLIPPAGE_ALLOWED = 0.02
@@ -28,6 +37,14 @@ def initialize(context):
 
 
 def _handle_data(context, data):
+    freq = get_environment('data_frequency')
+    if freq == 'daily':
+        rsi_freq = '1D'
+    elif freq == 'minute':
+        rsi_freq = '1m'
+    else:
+        raise ValueError('unknown data_freq "{}"'.format(freq))
+
     price = data.current(context.asset, 'price')
     log.info('got price {price}'.format(price=price))
 
@@ -35,28 +52,27 @@ def _handle_data(context, data):
         context.asset,
         fields='price',
         bar_count=20,
-        frequency='1D'
+        frequency=rsi_freq
     )
     # Relative Strength Index (RSI)
-    rsi = talib.RSI(prices.values, timeperiod=14)[-1]
+    rsi = talib.RSI(prices.values, timeperiod=context.TIMEPERIOD)[-1]
     log.info('got rsi: {}'.format(rsi))
 
-    # TODO: scale these according to portfolio balance
-    RSI_SWING = 30  # how far on either side of RSI 50 before buy/sell
-    MIN_TRADE = 0.1
-    MAX_BUY = 0.5
-    MAX_SELL = MAX_BUY
     is_sell = False
     is_buy = False
     # linear scale buy based on distance RSI from 50%
-    if rsi < 50 - RSI_SWING:  # buy
+    if rsi < 50 - context.RSI_SWING:  # buy
         is_buy = True
-        buy_increment = round(MIN_TRADE + MAX_BUY * (50.0 - rsi) / 50.0, 1)
+        buy_increment = round(
+            context.MIN_TRADE + context.MAX_BUY * (50.0 - rsi) / 50.0, 1
+        )
         assert buy_increment > 0
         log.info("BUY {}".format(buy_increment))
-    elif rsi > 50 + RSI_SWING:  # sell
+    elif rsi > 50 + context.RSI_SWING:  # sell
         is_sell = True
-        sell_increment = round(MIN_TRADE + MAX_SELL * (rsi - 50.0) / 50.0, 1)
+        sell_increment = round(
+            context.MIN_TRADE + context.MAX_SELL * (rsi - 50.0) / 50.0, 1
+        )
         assert sell_increment > 0
         log.info("SELL! {}".format(sell_increment))
     else:
@@ -159,29 +175,16 @@ def handle_data(context, data):
 
 
 if __name__ == '__main__':
-    live = False
-    if live:
-        run_algorithm(
-            capital_base=10,
-            initialize=initialize,
-            handle_data=handle_data,
-            analyze=analyze,
-            exchange_name='bittrex',
-            live=True,
-            algo_namespace=ALGO_NAMESPACE,
-            quote_currency='btc',
-            simulate_orders=True,
-        )
-    else:
-        run_algorithm(
-            capital_base=1,
-            data_frequency='daily',
-            initialize=initialize,
-            handle_data=handle_data,
-            analyze=analyze,
-            exchange_name='binance',
-            algo_namespace=ALGO_NAMESPACE,
-            quote_currency='btc',
-            start=pd.to_datetime('2017-07-15', utc=True),
-            end=pd.to_datetime('2018-12-23', utc=True),
-        )
+    run_algorithm(
+        live=False,  # set this to true to lose all your money
+        capital_base=1,  # starting captial
+        data_frequency='minute',
+        initialize=initialize,
+        handle_data=handle_data,
+        analyze=analyze,
+        exchange_name='binance',
+        algo_namespace=ALGO_NAMESPACE,
+        quote_currency='btc',
+        start=pd.to_datetime('2018-12-22', utc=True),
+        end=pd.to_datetime('2018-12-23', utc=True),
+    )
