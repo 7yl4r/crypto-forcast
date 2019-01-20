@@ -178,7 +178,7 @@ if __name__ == '__main__':
     run_algorithm(
         live=False,  # set this to true to lose all your money
         capital_base=1,  # starting captial
-        data_frequency='minute',
+        data_frequency='minute',  # minute || daily
         initialize=initialize,
         handle_data=handle_data,
         analyze=analyze,

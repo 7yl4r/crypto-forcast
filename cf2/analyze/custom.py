@@ -6,7 +6,7 @@ from catalyst.exchange.utils.stats_utils import extract_transactions
 
 from plo7y.ts_compare.horizongraph import Horizon
 
-DPI = 110
+DPI = None  # 100
 
 
 def add_plt(perf_data, rows, cols, n, varname):
@@ -62,12 +62,28 @@ def horizon(perf_data):
     varnames = [
         'ending_cash', 'ending_value', 'portfolio_value'
     ]
-    # TODO:
-    # da_y = [perf_data.loc[:, [varn]] for varn in varnames]
-    # da_x = range(len(da_y[0]))  # assume all have same x?
-    da_y = perf_data.loc[:, ['portfolio_value']]
-    da_x = range(len(da_y))  # assume all have same x?
-    plot = Horizon().run(da_x, da_y, varnames, bands=3)
+
+    # data = perf_data.loc[:, [vname]]
+    # print(dir(data))
+    # print(data)
+    da_y = [
+        list(perf_data.loc[:, [vname]][vname].values)
+        for vname in varnames
+    ]
+    print('---da_y--------------------------')
+    print('max={} | min={} | len=[{}x{}]'.format(
+        max(max(da_y)), min(min(da_y)), len(da_y), len(da_y[0])
+    ))
+    print('---da_x--------------------------')
+    # assume all have same x
+    da_x = perf_data.loc[:, ['portfolio_value']].index.values
+    print(da_x)
+    print('---labels =?= da_y----------------')
+    labels = varnames  # ['portfolio_value']
+    print('{} =?= {}'.format(len(da_y), len(labels)))
+
+    plot = Horizon().run(da_x, da_y, labels, bands=3)
+
     plot.subplots_adjust(left=0.07, right=0.998, top=0.99, bottom=0.01)
     plt.savefig("figures/horizon.png", dpi=DPI)
     plt.clf()
