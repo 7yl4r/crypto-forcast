@@ -68,16 +68,16 @@ class Horizon(object):
         n = len(y)
 
         F = self.create_figure(figsize)
-        df = DataTransformer(y, bands)
+        data_munger = MeanCenteredDataTransformer(y, bands)
 
         for i in range(n):
             ax = F.add_subplot(n, 1, i+1)
-            transformed_x, bands = df.transform(y[i], x)
+            transformed_x, bands = data_munger.transform(y[i], x)
 
             for idx, band in enumerate(bands):
                 ax.fill_between(transformed_x[idx], 0, band, color=colors[idx])
 
-            self.adjust_visuals_line(x, y[i], df, ax, i, labels)
+            self.adjust_visuals_line(x, y[i], data_munger, ax, i, labels)
 
         return plt
 
@@ -141,9 +141,12 @@ class Horizon(object):
 
 
 # ----------------------------------------------------------------------
-# DATA TRANSFORMER:
+# DATA TRANSFORMERS:
 # ----------------------------------------------------------------------
-class DataTransformer(object):
+class SharedAxisDataTransformer(object):
+    """
+    Transforms x & y data for horizongraphs all having shared x & y
+    """
 
     def __init__(self, y, bands):
         """
@@ -295,3 +298,62 @@ class DataTransformer(object):
         bottom = (i % self.num_band) * self.band
 
         return self.transform_number(y1, top, bottom)
+
+
+class MeanCenteredDataTransformer(SharedAxisDataTransformer):
+    """
+    Transforms x & y data for horizongraphs each with their own x & y.
+    Accomplishes this by normalizing all bands to range [0,1] and fixing
+    the 0 point to the mean of the series.
+    """
+
+    def get_max(self):
+        return 1.0  # * self.num_band ?
+
+    def transform(self, y_i, x):
+        y_arry = numpy.array(y_i)
+        mean = numpy.mean(y_arry)
+        nmin = numpy.min(y_arry)
+        nmax = numpy.max(y_arry)
+        max_deviation = max(mean - nmin, nmax - mean)
+        print("--- [{:9.3f} {:9.3f}] ---".format(nmin, nmax))
+        y_bands = []
+        x1 = []
+        # normalize to [-1, 1]
+        if max_deviation < 0:
+            # nothing interesting in this series
+            return [[0] * len(y_i)] * self.num_band*2
+        # implied else
+        normalized_y = [(val - mean) / max_deviation for val in y_i]
+        print("--- [{:9.3f} {:9.3f}]".format(
+            min(normalized_y), max(normalized_y)
+        ))
+        # linear band crossing points:
+        crossovers = numpy.linspace(0.0, 1.0, self.num_band + 1)
+        # (+) bands first
+        for sign in [1.0, -1.0]:
+            for i in range(len(crossovers)-1):
+                band = [0]*len(normalized_y)
+                count = 0
+                lower_bound = crossovers[i]
+                upper_bound = crossovers[i+1]
+                for ib in range(len(band)):
+                    y_n = normalized_y[ib] * sign
+                    if lower_bound < y_n:
+                        if y_n < upper_bound:
+                            band[ib] = abs(y_n) - crossovers[i]
+                            count += 1
+                        else:
+                            band[ib] = 1.0
+                    # else:
+                    #     print("{} !< {} !< {}".format(
+                    #         lower_bound, y_n, upper_bound
+                    #     ))
+                    # else leave it 0
+                print('bnd {:+4.2f}<x<{:+4.2f}\t|\t{}'.format(
+                    lower_bound, upper_bound, count
+                ))
+                y_bands.append(band)
+                x1.append(x)
+        # import pdb; pdb.set_trace()
+        return x1, y_bands
