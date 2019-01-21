@@ -7,6 +7,7 @@ from catalyst.exchange.utils.stats_utils import extract_transactions
 from plo7y.ts_compare.horizongraph import Horizon
 
 DPI = None  # 100
+PLT_SIZE = (9, 5)
 
 
 def add_plt(perf_data, rows, cols, n, varname):
@@ -20,6 +21,11 @@ def add_plt(perf_data, rows, cols, n, varname):
 
 
 def plot_all_perfs(perf_data):
+    """
+    NOTE: has been replaced by horizongraph.
+
+    Exploratory plot of a lot of perf data.
+    """
     plt.clf()
     rows = 3
     cols = 2
@@ -44,6 +50,8 @@ def values(perf_data):
 
 def val_cash_portfolio_check(perf_data):
     """
+    NOTE: has been replaced by horizongraph.
+
     Verifies that
      'portfolio_value': self.ending_cash + self.ending_value,
     """
@@ -60,7 +68,23 @@ def val_cash_portfolio_check(perf_data):
 def horizon(perf_data):
     plt.clf()
     varnames = [
-        'ending_cash', 'ending_value', 'portfolio_value'
+        'portfolio_value',
+        # 'price_change',  # KeyError
+
+        'ending_cash',
+        "gross_leverage",
+
+        'net_leverage',
+        'ending_value',
+        'short_exposure',
+
+        'long_exposure',
+
+        'longs_count',
+        'shorts_count',
+
+        'rsi',
+        'volume',  # too big magnitude; throws off scale of others
     ]
 
     # data = perf_data.loc[:, [vname]]
@@ -83,34 +107,111 @@ def horizon(perf_data):
     labels = varnames  # ['portfolio_value']
     print('{} =?= {}'.format(len(da_y), len(labels)))
 
-    plot = Horizon().run(da_x, da_y, labels, bands=3, figsize=(9, 5))
+    plot = Horizon().run(da_x, da_y, labels, bands=3, figsize=PLT_SIZE)
 
-    plot.subplots_adjust(left=0.07, right=0.998, top=0.99, bottom=0.01)
+    plot.subplots_adjust(left=0.01, right=0.998, top=0.99, bottom=0.01)
     plt.savefig("figures/horizon.png", dpi=DPI)
     plt.clf()
 
 
+def tutorial_plt2(context, results):
+    plt.clf()
+    # Plot the portfolio and asset data.
+    ax1 = plt.subplot(611)
+    results[['portfolio_value']].plot(ax=ax1)
+    ax1.set_ylabel('Portfolio Value (USD)')
+
+    ax2 = plt.subplot(612, sharex=ax1)
+    ax2.set_ylabel('{asset} (USD)'.format(asset=context.ASSET_NAME))
+    (context.TICK_SIZE * results[['price']]).plot(ax=ax2)
+
+    # NOTE: !!! this throws an error, so we're skipping it for now
+    # trans = results.ix[[t != [] for t in results.transactions]]
+    # buys = trans.ix[
+    #     [t[0]['amount'] > 0 for t in trans.transactions]
+    # ]
+    # ax2.plot(
+    #     buys.index,
+    #     context.TICK_SIZE * results.price[buys.index],
+    #     '^',
+    #     markersize=10,
+    #     color='g',
+    # )
+
+    ax3 = plt.subplot(613, sharex=ax1)
+    results[['leverage', 'alpha', 'beta']].plot(ax=ax3)
+    ax3.set_ylabel('Leverage ')
+
+    ax4 = plt.subplot(614, sharex=ax1)
+    results[['starting_cash', 'cash']].plot(ax=ax4)
+    ax4.set_ylabel('Cash (USD)')
+
+    results[[
+        'treasury',
+        'algorithm',
+        'benchmark',
+    ]] = results[[
+        'treasury_period_return',
+        'algorithm_period_return',
+        'benchmark_period_return',
+    ]]
+
+    ax5 = plt.subplot(615, sharex=ax1)
+    results[[
+        'treasury',
+        'algorithm',
+        'benchmark',
+    ]].plot(ax=ax5)
+    ax5.set_ylabel('Percent Change')
+
+    ax6 = plt.subplot(616, sharex=ax1)
+    results[['volume']].plot(ax=ax6)
+    ax6.set_ylabel('Volume (mCoins/5min)')
+
+    plt.legend(loc=3)
+
+    # Show the plot.
+    plt.gcf().set_size_inches(18, 8)
+    plt.savefig("figures/tut2.png", bbox_inches='tight')
+    plt.clf()
+
+
 def analyze(context, perf):
+    horizon(perf)
+    tutorial_plt1(context, perf)
+    tutorial_plt2(context, perf)
+    # TODO: RSI plot(s)?
+    # freq = get_environment('data_frequency')
+    # if freq == 'daily':
+    #     rsi_freq = '1D'
+    # elif freq == 'minute':
+    #     rsi_freq = '1m'
+    # else:
+    #     raise ValueError('unknown data_freq "{}"'.format(freq))
+    # prices = data.history(
+    #     context.asset,
+    #     fields='price',
+    #     bar_count=20,
+    #     frequency=rsi_freq
+    # )
+    # # Relative Strength Index (RSI)
+    # rsi = talib.RSI(prices.values, timeperiod=context.TIMEPERIOD)[-1]
+
+    # TODO: something useful with this?:
+    # perf_tracker = perf.PerformanceTracker(
+    #     sim_params, get_calendar("NYSE"), env
+    # )
+
+
+def tutorial_plt1(context, perf):
     # Get the quote_currency that was passed as a parameter to the simulation
     exchange = list(context.exchanges.values())[0]
     quote_currency = exchange.quote_currency.upper()
-
-    plot_all_perfs(perf)
-    val_cash_portfolio_check(perf)
-    horizon(perf)
-
-    rows = 4
+    rows = 1
     cols = 1
-    # First chart: Plot portfolio value using quote_currency
-    ax1 = plt.subplot(rows, cols, 1)
-    perf.loc[:, ['portfolio_value']].plot(ax=ax1)
-    ax1.legend_.remove()
-    ax1.set_ylabel('Portfolio Value\n({})'.format(quote_currency))
-    start, end = ax1.get_ylim()
-    ax1.yaxis.set_ticks(np.arange(start, end, (end - start) / 5))
 
     # Second chart: Plot asset price, moving averages and buys/sells
-    ax2 = plt.subplot(rows, cols, 2, sharex=ax1)
+    ax2 = plt.subplot(rows, cols, 1)
     perf.loc[:, ['price', 'short_mavg', 'long_mavg']].plot(
         ax=ax2,
         label='Price'
@@ -144,43 +245,30 @@ def analyze(context, perf):
             label=''
         )
 
-    # Third chart: Compare percentage change between our portfolio
-    # and the price of the asset
-    ax3 = plt.subplot(rows, cols, 3, sharex=ax1)
-    perf.loc[:, ['algorithm_period_return', 'price_change']].plot(ax=ax3)
-    ax3.legend_.remove()
-    ax3.set_ylabel('Percent Change')
-    start, end = ax3.get_ylim()
-    ax3.yaxis.set_ticks(np.arange(start, end, (end - start) / 5))
+    # First chart: Plot portfolio value using quote_currency
+    # ax2 = plt.subplot(rows, cols, 1, sharex=ax1)
+    # perf.loc[:, ['portfolio_value']].plot(ax=ax1)
+    # ax1.legend_.remove()
+    # ax1.set_ylabel('Portfolio Value\n({})'.format(quote_currency))
+    # start, end = ax1.get_ylim()
+    # ax1.yaxis.set_ticks(np.arange(start, end, (end - start) / 5))
 
-    # Fourth chart: Plot our cash
-    ax4 = plt.subplot(rows, cols, 4, sharex=ax1)
-    perf.ending_cash.plot(ax=ax4)
-    ax4.set_ylabel('ending_cash\n({})'.format(quote_currency))
-    start, end = ax4.get_ylim()
-    ax4.yaxis.set_ticks(np.arange(0, end, end / 5))
+    # # Third chart: Compare percentage change between our portfolio
+    # # and the price of the asset
+    # ax3 = plt.subplot(rows, cols, 3, sharex=ax1)
+    # perf.loc[:, ['algorithm_period_return', 'price_change']].plot(ax=ax3)
+    # ax3.legend_.remove()
+    # ax3.set_ylabel('Percent Change')
+    # start, end = ax3.get_ylim()
+    # ax3.yaxis.set_ticks(np.arange(start, end, (end - start) / 5))
+
+    # # Fourth chart: Plot our cash
+    # ax4 = plt.subplot(rows, cols, 4, sharex=ax1)
+    # perf.ending_cash.plot(ax=ax4)
+    # ax4.set_ylabel('ending_cash\n({})'.format(quote_currency))
+    # start, end = ax4.get_ylim()
+    # ax4.yaxis.set_ticks(np.arange(0, end, end / 5))
 
     # plt.show()
-    plt.savefig("figures/analyze_dual_ma.png", bbox_inches='tight')
-
-    # TODO: RSI plot(s)?
-    # freq = get_environment('data_frequency')
-    # if freq == 'daily':
-    #     rsi_freq = '1D'
-    # elif freq == 'minute':
-    #     rsi_freq = '1m'
-    # else:
-    #     raise ValueError('unknown data_freq "{}"'.format(freq))
-    # prices = data.history(
-    #     context.asset,
-    #     fields='price',
-    #     bar_count=20,
-    #     frequency=rsi_freq
-    # )
-    # # Relative Strength Index (RSI)
-    # rsi = talib.RSI(prices.values, timeperiod=context.TIMEPERIOD)[-1]
-
-    # TODO: something useful with this?:
-    # perf_tracker = perf.PerformanceTracker(
-    #     sim_params, get_calendar("NYSE"), env
-    # )
+    plt.gcf().set_size_inches(PLT_SIZE)
+    plt.savefig("figures/tut1.png", bbox_inches='tight')

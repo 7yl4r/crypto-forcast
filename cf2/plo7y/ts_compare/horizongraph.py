@@ -1,5 +1,6 @@
 """
-Creates a Horizon graph according to Panopticon (http://www.panopticon.com/).
+Creates a Horizon graph according to Panopticon.
+See https://idl.cs.washington.edu/papers/horizon/ for further explaination.
 
 Example usage:
 ```
@@ -16,14 +17,13 @@ Based on https://github.com/thomaskern/horizongraph_matplotlib
 """
 
 import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
+import numpy
 
 
 class InputError(Exception):
     def __init__(self, value):
         self.value = value
-
-    def __str__(self):
-        return rep(self.value)
 
 
 class Horizon(object):
@@ -64,7 +64,6 @@ class Horizon(object):
         -------
         plt object
         """
-
         self.check_valid_params(x, y, labels, figsize, bands, colors)
         n = len(y)
 
@@ -78,7 +77,7 @@ class Horizon(object):
             for idx, band in enumerate(bands):
                 ax.fill_between(transformed_x[idx], 0, band, color=colors[idx])
 
-            self.adjust_visuals_line(x, df, ax, i, labels)
+            self.adjust_visuals_line(x, y[i], df, ax, i, labels)
 
         return plt
 
@@ -89,22 +88,47 @@ class Horizon(object):
         return F
 
     def set_theme(self, ax):
-        """Hides all ticks and labels on both axes """
+        """Hides all ticks and labels on both axes"""
         ax.get_yaxis().set_visible(False)
         ax.get_xaxis().set_visible(False)
 
-    def adjust_visuals_line(self, x, df, ax, i, labels):
-        """Adjusts the subplot: height, width, labels """
+    def adjust_visuals_line(self, x, y, df, ax, i, labels):
+        """Adjusts the subplot: height, width, labels"""
         plt.xlim(0, x[-1])
         plt.ylim(0, df.get_max()/3)
         self.set_theme(ax)
         ax.get_yaxis().set_visible(True)
         ax.set_yticks([])
-        ax.set_ylabel(labels[i], rotation="horizontal")
+
+        y_arry = numpy.array(y)
+        # mean, std dev, range
+        # label = (
+        #     '  {:+1.0E} | {:+1.0E} [{:+1.0E} {:+1.0E}] {}'
+        # ).format(
+        #     numpy.mean(y_arry),
+        #     numpy.std(y_arry),
+        #     numpy.min(y_arry),
+        #     numpy.max(y_arry),
+        #     labels[i],
+        # )
+        mean = numpy.mean(y_arry)
+        label = (
+            '(+/-){:1.0E} {}\n    {:+1.0E}'
+        ).format(
+            max(mean - numpy.min(y_arry), numpy.max(y_arry) - mean),
+            labels[i],
+            numpy.mean(y_arry),
+        )
+        font_p = FontProperties()
+        font_p.set_family('monospace')
+        ax.set_ylabel(
+            label,
+            ha='left', va='center', ma='left', rotation="horizontal",
+            fontproperties=font_p
+        )
 
     def check_valid_params(self, x, y, labels, figsize, bands, colors):
         """Checks parameters, throws an InputError if parameters are invalid"""
-
         if bands * 2 != len(colors):
             raise InputError("Number of bands invalid for number of colors")
 
@@ -135,7 +159,7 @@ class DataTransformer(object):
 
     # public methods
     def get_max(self):
-        """Returns the maximum y-value """
+        """Returns the maximum y-value"""
         return self.max
 
     def transform(self, y, x):
@@ -153,13 +177,16 @@ class DataTransformer(object):
         Keyword arguments:
         Requires the two parameters to satisfy len(y) == len(x).
 
-        RETURN: (array of new x positions, array of bands for y values).
-        y values array has the length of NUM_BAND*2.
-        All positive values are stored in the first NUM_BAND entries followed
-        by the negative ones.
-        The order for the positive/negative values is: dark, medium, light.
-        """
+        RETURNS:
+        --------
+        array of new x positions
+        array of bands for y values
+            y values array has the length of NUM_BAND*2.
+            All positive values are stored in the first NUM_BAND entries
+            followed by the negative ones.
+            The order for the positive/negative values is: dark, medium, light.
 
+        """
         ret = []
         x1 = []
         one_step = x[1] - x[0]
@@ -212,7 +239,6 @@ class DataTransformer(object):
         band: maximum number of y-values divided by the number of bands.
         max/min is set according to the values in data
         """
-
         self.max = max(max(data))
         self.min = min(min(data))
 
@@ -264,8 +290,8 @@ class DataTransformer(object):
         return i < self.num_band
 
     def calculate_new_y_value(self, i, y1):
-        """Returns new y-value for a specific band """
+        """Returns new y-value for a specific band"""
         top = (i % self.num_band + 1) * self.band
         bottom = (i % self.num_band) * self.band
 
-        return self.transform_number(y1, top , bottom)
+        return self.transform_number(y1, top, bottom)

@@ -33,6 +33,12 @@ def initialize(context):
     context.SLIPPAGE_ALLOWED = 0.02
 
     context.errors = []
+
+    # For all trading pairs in the poloniex bundle, the default denomination
+    # currently supported by Catalyst is 1/1000th of a full coin. Use this
+    # constant to scale the price of up to that of a full coin if desired.
+    context.TICK_SIZE = 1000.0
+
     pass
 
 
@@ -84,6 +90,10 @@ def _handle_data(context, data):
     record(
         price=price,
         rsi=rsi,
+        cash=cash,
+        volume=data.current(context.asset, 'volume'),
+        starting_cash=context.portfolio.starting_cash,
+        leverage=context.account.leverage,
     )
     # TODO: wait for open orders to fill:
     # orders = context.blotter.open_orders
