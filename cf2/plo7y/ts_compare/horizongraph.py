@@ -68,7 +68,7 @@ class Horizon(object):
         n = len(y)
 
         F = self.create_figure(figsize)
-        data_munger = MeanCenteredDataTransformer(y, bands)
+        data_munger = TimeZeroCenteredDataTransformer(y, bands)
 
         for i in range(n):
             ax = F.add_subplot(n, 1, i+1)
@@ -310,12 +310,15 @@ class MeanCenteredDataTransformer(SharedAxisDataTransformer):
     def get_max(self):
         return 1.0  # * self.num_band ?
 
+    def get_zero_of(self, y_i):
+        return numpy.mean(numpy.array(y_i))
+
     def transform(self, y_i, x):
         y_arry = numpy.array(y_i)
-        mean = numpy.mean(y_arry)
+        y_0 = self.get_zero_of(y_i)
         nmin = numpy.min(y_arry)
         nmax = numpy.max(y_arry)
-        max_deviation = max(mean - nmin, nmax - mean)
+        max_deviation = max(y_0 - nmin, nmax - y_0)
         print("--- [{:9.3f} {:9.3f}] ---".format(nmin, nmax))
         y_bands = []
         x1 = []
@@ -324,7 +327,7 @@ class MeanCenteredDataTransformer(SharedAxisDataTransformer):
             # nothing interesting in this series
             return [[0] * len(y_i)] * self.num_band*2
         # implied else
-        normalized_y = [(val - mean) / max_deviation for val in y_i]
+        normalized_y = [(val - y_0) / max_deviation for val in y_i]
         print("--- [{:9.3f} {:9.3f}]".format(
             min(normalized_y), max(normalized_y)
         ))
@@ -357,3 +360,8 @@ class MeanCenteredDataTransformer(SharedAxisDataTransformer):
                 x1.append(x)
         # import pdb; pdb.set_trace()
         return x1, y_bands
+
+
+class TimeZeroCenteredDataTransformer(MeanCenteredDataTransformer):
+    def get_zero_of(self, y_i):
+        return y_i[0]
