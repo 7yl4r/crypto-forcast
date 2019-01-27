@@ -20,17 +20,22 @@ def initialize(context):
     context.ASSET_NAME = 'eth_btc'
     context.asset = symbol(context.ASSET_NAME)
 
-    context.TIMEPERIOD = 5
+    # === alrgorithm calculation settings
     # TODO: scale these according to portfolio balance
+    context.TIMEPERIOD = 5
     context.RSI_SWING = 40  # how far on either side of RSI 50 before buy/sell
+
+    # === buy/sell order settings
+    # TODO: scale these according to portfolio balance
     context.MIN_TRADE = 0.1
     context.MAX_BUY = 0.5
     context.MAX_SELL = context.MAX_BUY
+    context.SLIPPAGE_ALLOWED = 0.02
 
     # NOTE: I don't kwow what these are and what they do:
     context.TARGET_POSITIONS = 30
     context.PROFIT_TARGET = 0.1
-    context.SLIPPAGE_ALLOWED = 0.02
+    context.BAR_COUNT = 20
 
     context.errors = []
 
@@ -42,7 +47,7 @@ def initialize(context):
     pass
 
 
-def _handle_data(context, data):
+def get_rsi(context, data):
     freq = get_environment('data_frequency')
     if freq == 'daily':
         rsi_freq = '1D'
@@ -51,19 +56,23 @@ def _handle_data(context, data):
     else:
         raise ValueError('unknown data_freq "{}"'.format(freq))
 
-    price = data.current(context.asset, 'price')
-    log.info('got price {price}'.format(price=price))
-
     prices = data.history(
         context.asset,
         fields='price',
-        bar_count=20,
+        bar_count=context.BAR_COUNT,
         frequency=rsi_freq
     )
     # Relative Strength Index (RSI)
     rsi = talib.RSI(prices.values, timeperiod=context.TIMEPERIOD)[-1]
-    log.info('got rsi: {}'.format(rsi))
+    # log.debug('got rsi: {}'.format(rsi))
 
+    return rsi
+
+
+def _handle_data(context, data):
+    price = data.current(context.asset, 'price')
+    cash = context.portfolio.cash
+    rsi = get_rsi(context, data)
     is_sell = False
     is_buy = False
     # linear scale buy based on distance RSI from 50%
@@ -73,28 +82,19 @@ def _handle_data(context, data):
             context.MIN_TRADE + context.MAX_BUY * (50.0 - rsi) / 50.0, 1
         )
         assert buy_increment > 0
-        log.info("BUY {}".format(buy_increment))
+        log.debug("BUY {}".format(buy_increment))
     elif rsi > 50 + context.RSI_SWING:  # sell
         is_sell = True
         sell_increment = round(
             context.MIN_TRADE + context.MAX_SELL * (rsi - 50.0) / 50.0, 1
         )
         assert sell_increment > 0
-        log.info("SELL! {}".format(sell_increment))
+        log.debug("SELL! {}".format(sell_increment))
     else:
-        log.info('rsi is ~50%')
+        pass
+        # log.debug('rsi is ~50%')
 
-    cash = context.portfolio.cash
-    log.info('base currency available: {cash}'.format(cash=cash))
-
-    record(
-        price=price,
-        rsi=rsi,
-        cash=cash,
-        volume=data.current(context.asset, 'volume'),
-        starting_cash=context.portfolio.starting_cash,
-        leverage=context.account.leverage,
-    )
+    # log.info('base currency available: {cash}'.format(cash=cash))
     # TODO: wait for open orders to fill:
     # orders = context.blotter.open_orders
     # if orders:
@@ -137,15 +137,37 @@ def _handle_data(context, data):
     #         log.info('no buy or sell opportunity found')
     # else:
     #     is_buy = True
+    if is_buy:
+        try_buy(context, data, buy_increment)
+    if is_sell:
+        try_buy(context, data, -sell_increment)
+    record(
+        price=price,
+        rsi=rsi,
+        cash=cash,
+        volume=data.current(context.asset, 'volume'),
+        starting_cash=context.portfolio.starting_cash,
+        positions_asset=context.portfolio.positions[context.asset].amount,
+        leverage=context.account.leverage,
+    )
 
+
+def try_buy(context, data, increment):
+    """Attempt a buy/sell.
+    Returns false if assets or cash insufficient.
+    Returns true if order is successfully placed.
+    """
+    is_buy = increment > 0
+    is_sell = increment < 0
+    price = data.current(context.asset, 'price')
     if is_buy:
         # if buy_increment is None:
         #     log.info('the rsi is too high to consider buying {}'.format(rsi))
         #     return
         #
-        # if price * buy_increment > cash:
-        #     log.info('not enough base currency to consider buying')
-        #     return
+        if price * increment > context.portfolio.cash:
+            log.info('not enough base currency buy')
+            return False
         #
         # log.info(
         #     'buying position cheaper than cost basis {} < {}'.format(
@@ -156,32 +178,58 @@ def _handle_data(context, data):
         # )
         order(
             asset=context.asset,
-            amount=buy_increment,
+            amount=increment,
             limit_price=price * (1 + context.SLIPPAGE_ALLOWED)
         )
+        return True
     elif is_sell:
+        if (
+            price * increment >
+            context.portfolio.positions[context.asset].amount
+        ):
+            log.info('not enough asset to sell')
+            return False
+
         order(
             asset=context.asset,
-            amount=-sell_increment,
+            amount=increment,
             limit_price=price * (1 - context.SLIPPAGE_ALLOWED)
         )
+        return True
+
+
+def _hand_data_dumb(context, data):
+    """Stupid always-buy for testing purposes only"""
+    price = data.current(context.asset, 'price')
+    cash = context.portfolio.cash
+    rsi = get_rsi(context, data)
+    try_buy(
+        context, data, context.MIN_TRADE,
+    )
+    record(
+        price=price,
+        rsi=rsi,
+        cash=cash,
+        volume=data.current(context.asset, 'volume'),
+        starting_cash=context.portfolio.starting_cash,
+        leverage=context.account.leverage,
+        positions_asset=context.portfolio.positions[context.asset].amount,
+    )
 
 
 def handle_data(context, data):
-    log.info('handling bar {}'.format(data.current_dt))
+    # log.info('handling bar {}'.format(data.current_dt))
     # try:
     _handle_data(context, data)
     # except Exception as e:
     #     log.warn('aborting the bar on error {}'.format(e))
     #     context.errors.append(e)
-
-    log.info('completed bar {}, total execution errors {}'.format(
-        data.current_dt,
-        len(context.errors)
-    ))
-
-    if len(context.errors) > 0:
-        log.info('the errors:\n{}'.format(context.errors))
+    # log.info('completed bar {}, total execution errors {}'.format(
+    #     data.current_dt,
+    #     len(context.errors)
+    # ))
+    # if len(context.errors) > 0:
+    #     log.info('the errors:\n{}'.format(context.errors))
 
 
 if __name__ == '__main__':
@@ -195,6 +243,6 @@ if __name__ == '__main__':
         exchange_name='binance',
         algo_namespace=ALGO_NAMESPACE,
         quote_currency='btc',
-        start=pd.to_datetime('2018-09-22', utc=True),
+        start=pd.to_datetime('2018-12-22', utc=True),
         end=pd.to_datetime('2018-12-23', utc=True),
     )

@@ -68,16 +68,16 @@ class Horizon(object):
         n = len(y)
 
         F = self.create_figure(figsize)
-        data_munger = TimeZeroCenteredDataTransformer(y, bands)
+        self.data_munger = TimeZeroCenteredDataTransformer(y, bands)
 
         for i in range(n):
             ax = F.add_subplot(n, 1, i+1)
-            transformed_x, bands = data_munger.transform(y[i], x)
+            transformed_x, bands = self.data_munger.transform(y[i], x)
 
             for idx, band in enumerate(bands):
                 ax.fill_between(transformed_x[idx], 0, band, color=colors[idx])
 
-            self.adjust_visuals_line(x, y[i], data_munger, ax, i, labels)
+            self.adjust_visuals_line(x, y[i], self.data_munger, ax, i, labels)
 
         return plt
 
@@ -100,24 +100,12 @@ class Horizon(object):
         ax.get_yaxis().set_visible(True)
         ax.set_yticks([])
 
-        y_arry = numpy.array(y)
-        # mean, std dev, range
-        # label = (
-        #     '  {:+1.0E} | {:+1.0E} [{:+1.0E} {:+1.0E}] {}'
-        # ).format(
-        #     numpy.mean(y_arry),
-        #     numpy.std(y_arry),
-        #     numpy.min(y_arry),
-        #     numpy.max(y_arry),
-        #     labels[i],
-        # )
-        mean = numpy.mean(y_arry)
         label = (
             '(+/-){:1.0E} {}\n    {:+1.0E}'
         ).format(
-            max(mean - numpy.min(y_arry), numpy.max(y_arry) - mean),
+            self.data_munger.get_y_label_max(y),
             labels[i],
-            numpy.mean(y_arry),
+            self.data_munger.get_y_label_min(y),
         )
         font_p = FontProperties()
         font_p.set_family('monospace')
@@ -164,6 +152,15 @@ class SharedAxisDataTransformer(object):
     def get_max(self):
         """Returns the maximum y-value"""
         return self.max
+
+    def get_y_label_min(self, y):
+        """Return min value on  y axis"""
+        # TODO: is this correct?
+        return 0
+
+    def get_y_label_max(self, y):
+        """Return max value on y axis"""
+        return self.get_max()
 
     def transform(self, y, x):
         """Transforms y-data into an array of bands
@@ -310,6 +307,16 @@ class MeanCenteredDataTransformer(SharedAxisDataTransformer):
     def get_max(self):
         return 1.0  # * self.num_band ?
 
+    def get_y_label_min(self, y):
+        """Return min value on  y axis"""
+        return numpy.mean(numpy.array(y))
+
+    def get_y_label_max(self, y):
+        """Return max value on y axis"""
+        y_arry = numpy.array(y)
+        mean = numpy.mean(y_arry)
+        return max(mean - numpy.min(y_arry), numpy.max(y_arry) - mean)
+
     def get_zero_of(self, y_i):
         return numpy.mean(numpy.array(y_i))
 
@@ -365,3 +372,11 @@ class MeanCenteredDataTransformer(SharedAxisDataTransformer):
 class TimeZeroCenteredDataTransformer(MeanCenteredDataTransformer):
     def get_zero_of(self, y_i):
         return y_i[0]
+
+    def get_y_label_min(self, y):
+        return self.get_zero_of(y)
+
+    def get_y_label_max(self, y):
+        y_arry = numpy.array(y)
+        mean = numpy.mean(y_arry)
+        return max(mean - numpy.min(y_arry), numpy.max(y_arry) - mean)

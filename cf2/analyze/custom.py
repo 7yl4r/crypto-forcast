@@ -90,7 +90,7 @@ def horizon(perf_data, varnames, outfile_name):
     plot = Horizon().run(da_x, da_y, labels, bands=3, figsize=PLT_SIZE)
 
     plot.subplots_adjust(left=0.01, right=0.998, top=0.99, bottom=0.01)
-    plt.savefig("figures/horizon.png", dpi=DPI)
+    plt.savefig(outfile_name, dpi=DPI)
     plt.clf()
 
 
@@ -179,6 +179,14 @@ def analyze(context, perf):
             'volume',  # too big magnitude; throws off scale of others
         ],
         outfile_name="figures/horizon.png",
+    )
+    horizon(
+        perf,
+        varnames=[
+            'positions_asset',
+            'cash'
+        ],
+        outfile_name="figures/portfolio_composition.png",
     )
     tutorial_plt1(context, perf)
     tutorial_plt2(context, perf)
