@@ -319,7 +319,7 @@ class MeanCenteredDataTransformer(SharedAxisDataTransformer):
         nmin = numpy.min(y_arry)
         nmax = numpy.max(y_arry)
         max_deviation = max(y_0 - nmin, nmax - y_0)
-        print("--- [{:9.3f} {:9.3f}] ---".format(nmin, nmax))
+        # print("--- [{:9.3f} {:9.3f}] ---".format(nmin, nmax))
         y_bands = []
         x1 = []
         # normalize to [-1, 1]
@@ -328,9 +328,9 @@ class MeanCenteredDataTransformer(SharedAxisDataTransformer):
             return [[0] * len(y_i)] * self.num_band*2
         # implied else
         normalized_y = [(val - y_0) / max_deviation for val in y_i]
-        print("--- [{:9.3f} {:9.3f}]".format(
-            min(normalized_y), max(normalized_y)
-        ))
+        # print("--- [{:9.3f} {:9.3f}]".format(
+        #     min(normalized_y), max(normalized_y)
+        # ))
         # linear band crossing points:
         crossovers = numpy.linspace(0.0, 1.0, self.num_band + 1)
         # (+) bands first
@@ -353,9 +353,9 @@ class MeanCenteredDataTransformer(SharedAxisDataTransformer):
                     #         lower_bound, y_n, upper_bound
                     #     ))
                     # else leave it 0
-                print('bnd {:+4.2f}<x<{:+4.2f}\t|\t{}'.format(
-                    lower_bound, upper_bound, count
-                ))
+                # print('bnd {:+4.2f}<x<{:+4.2f}\t|\t{}'.format(
+                #     lower_bound, upper_bound, count
+                # ))
                 y_bands.append(band)
                 x1.append(x)
         # import pdb; pdb.set_trace()

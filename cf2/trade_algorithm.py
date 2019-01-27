@@ -20,9 +20,9 @@ def initialize(context):
     context.ASSET_NAME = 'eth_btc'
     context.asset = symbol(context.ASSET_NAME)
 
-    context.TIMEPERIOD = 7
+    context.TIMEPERIOD = 5
     # TODO: scale these according to portfolio balance
-    context.RSI_SWING = 30  # how far on either side of RSI 50 before buy/sell
+    context.RSI_SWING = 40  # how far on either side of RSI 50 before buy/sell
     context.MIN_TRADE = 0.1
     context.MAX_BUY = 0.5
     context.MAX_SELL = context.MAX_BUY
@@ -195,6 +195,6 @@ if __name__ == '__main__':
         exchange_name='binance',
         algo_namespace=ALGO_NAMESPACE,
         quote_currency='btc',
-        start=pd.to_datetime('2018-12-22', utc=True),
+        start=pd.to_datetime('2018-09-22', utc=True),
         end=pd.to_datetime('2018-12-23', utc=True),
     )

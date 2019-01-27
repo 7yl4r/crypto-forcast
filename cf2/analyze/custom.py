@@ -65,28 +65,8 @@ def val_cash_portfolio_check(perf_data):
     plt.clf()
 
 
-def horizon(perf_data):
+def horizon(perf_data, varnames, outfile_name):
     plt.clf()
-    varnames = [
-        'portfolio_value',
-        # 'price_change',  # KeyError
-
-        'ending_cash',
-        "gross_leverage",
-
-        'net_leverage',
-        'ending_value',
-        'short_exposure',
-
-        'long_exposure',
-
-        'longs_count',
-        'shorts_count',
-
-        'rsi',
-        'volume',  # too big magnitude; throws off scale of others
-    ]
-
     # data = perf_data.loc[:, [vname]]
     # print(dir(data))
     # print(data)
@@ -177,26 +157,31 @@ def tutorial_plt2(context, results):
 
 
 def analyze(context, perf):
-    horizon(perf)
+    horizon(
+        perf,
+        varnames=[
+            'portfolio_value',
+            # 'price_change',  # KeyError
+
+            'ending_cash',
+            "gross_leverage",
+
+            'net_leverage',
+            'ending_value',
+            'short_exposure',
+
+            'long_exposure',
+
+            'longs_count',
+            'shorts_count',
+
+            'rsi',
+            'volume',  # too big magnitude; throws off scale of others
+        ],
+        outfile_name="figures/horizon.png",
+    )
     tutorial_plt1(context, perf)
     tutorial_plt2(context, perf)
-    # TODO: RSI plot(s)?
-    # freq = get_environment('data_frequency')
-    # if freq == 'daily':
-    #     rsi_freq = '1D'
-    # elif freq == 'minute':
-    #     rsi_freq = '1m'
-    # else:
-    #     raise ValueError('unknown data_freq "{}"'.format(freq))
-    # prices = data.history(
-    #     context.asset,
-    #     fields='price',
-    #     bar_count=20,
-    #     frequency=rsi_freq
-    # )
-    # # Relative Strength Index (RSI)
-    # rsi = talib.RSI(prices.values, timeperiod=context.TIMEPERIOD)[-1]
-
     # TODO: something useful with this?:
     # perf_tracker = perf.PerformanceTracker(
     #     sim_params, get_calendar("NYSE"), env
