@@ -175,7 +175,10 @@ def analyze(context, perf):
             'longs_count',
             'shorts_count',
 
-            'rsi',
+            'rsi_2',
+            'rsi_4',
+            'rsi_8',
+            'rsi_16',
             'volume',  # too big magnitude; throws off scale of others
         ],
         outfile_name="figures/horizon.png",
@@ -184,7 +187,8 @@ def analyze(context, perf):
         perf,
         varnames=[
             'positions_asset',
-            'cash'
+            'cash',
+            'percent_asset',
         ],
         outfile_name="figures/portfolio_composition.png",
     )

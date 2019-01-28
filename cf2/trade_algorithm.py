@@ -22,8 +22,8 @@ def initialize(context):
 
     # === alrgorithm calculation settings
     # TODO: scale these according to portfolio balance
-    context.TIMEPERIOD = 5
-    context.RSI_SWING = 40  # how far on either side of RSI 50 before buy/sell
+    context.TIMEPERIODS = [2, 10, 100, 1000]
+    context.RSI_SWING = 30  # how far on either side of RSI 50 before buy/sell
 
     # === buy/sell order settings
     # TODO: scale these according to portfolio balance
@@ -35,7 +35,6 @@ def initialize(context):
     # NOTE: I don't kwow what these are and what they do:
     context.TARGET_POSITIONS = 30
     context.PROFIT_TARGET = 0.1
-    context.BAR_COUNT = 20
 
     context.errors = []
 
@@ -56,25 +55,29 @@ def get_rsi(context, data):
     else:
         raise ValueError('unknown data_freq "{}"'.format(freq))
 
-    prices = data.history(
-        context.asset,
-        fields='price',
-        bar_count=context.BAR_COUNT,
-        frequency=rsi_freq
-    )
     # Relative Strength Index (RSI)
-    rsi = talib.RSI(prices.values, timeperiod=context.TIMEPERIOD)[-1]
-    # log.debug('got rsi: {}'.format(rsi))
+    rsis = []
+    for time_period in context.TIMEPERIODS:
+        prices = data.history(
+            context.asset,
+            fields='price',
+            bar_count=time_period*3,  # TODO: what value should this be?
+            frequency=rsi_freq
+        )
+        rsis.append(talib.RSI(prices.values, timeperiod=time_period)[-1])
+        # log.debug('got rsi: {}'.format(rsi))
 
-    return rsi
+    return rsis
 
 
 def _handle_data(context, data):
     price = data.current(context.asset, 'price')
     cash = context.portfolio.cash
-    rsi = get_rsi(context, data)
+    rsis = get_rsi(context, data)
     is_sell = False
     is_buy = False
+    # TODO: for each rsi in rsis do... something?
+    rsi = rsis[1]
     # linear scale buy based on distance RSI from 50%
     if rsi < 50 - context.RSI_SWING:  # buy
         is_buy = True
@@ -141,13 +144,18 @@ def _handle_data(context, data):
         try_buy(context, data, buy_increment)
     if is_sell:
         try_buy(context, data, -sell_increment)
+    asset_value = context.portfolio.positions[context.asset].amount / price
     record(
         price=price,
-        rsi=rsi,
+        rsi_2=rsis[0],  # TODO: be more clever here
+        rsi_4=rsis[1],
+        rsi_8=rsis[2],
+        rsi_16=rsis[3],
         cash=cash,
         volume=data.current(context.asset, 'volume'),
         starting_cash=context.portfolio.starting_cash,
-        positions_asset=context.portfolio.positions[context.asset].amount,
+        positions_asset=asset_value,
+        percent_asset=asset_value / (asset_value + cash),
         leverage=context.account.leverage,
     )
 
