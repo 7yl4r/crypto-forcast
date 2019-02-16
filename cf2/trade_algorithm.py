@@ -1,13 +1,17 @@
-import talib
-import pandas as pd
-from logbook import Logger
+import math
+from itertools import repeat
+from functools import reduce
 
+from logbook import Logger
 from catalyst.api import order
 # from catalyst.api import order_target_percent
 from catalyst.api import symbol
 from catalyst.api import record
 from catalyst.api import get_environment
 from catalyst.utils.run_algo import run_algorithm
+import talib
+import pandas as pd
+import numpy
 
 from analyze.custom import analyze
 
@@ -22,18 +26,18 @@ def initialize(context):
 
     # === alrgorithm calculation settings
     # TODO: scale these according to portfolio balance
-    context.TIMEPERIODS = [2, 10, 100, 1000]
+    context.TIMEPERIODS = [5, 15, 100, 1000]
     context.RSI_SWING = 30  # how far on either side of RSI 50 before buy/sell
 
     # === buy/sell order settings
     # TODO: scale these according to portfolio balance
     context.MIN_TRADE = 0.1
-    context.MAX_BUY = 0.5
-    context.MAX_SELL = context.MAX_BUY
-    context.SLIPPAGE_ALLOWED = 0.02
+    context.MAX_TRADE = 0.5
+    context.SLIPPAGE_ALLOWED = 0.02  # [%]
+
+    context.TARGET_POSITION_PERCENT = 50.0
 
     # NOTE: I don't kwow what these are and what they do:
-    context.TARGET_POSITIONS = 30
     context.PROFIT_TARGET = 0.1
 
     context.errors = []
@@ -73,90 +77,149 @@ def get_rsi(context, data):
 def _handle_data(context, data):
     price = data.current(context.asset, 'price')
     cash = context.portfolio.cash
+
+    n_coins = context.portfolio.positions[context.asset].amount
+    # n coins * BTC/coin = asset_value (in BTC)
+    asset_value = n_coins * price
+    portfolio_value = asset_value + cash
+    percent_asset = asset_value / portfolio_value
+    # === get RSI suggestion
+    # RSI pressure is > 0 if buy suggested, < 0 if sell suggested
+    # bounded [-1, 1]
     rsis = get_rsi(context, data)
-    is_sell = False
-    is_buy = False
-    # TODO: for each rsi in rsis do... something?
-    rsi = rsis[1]
-    # linear scale buy based on distance RSI from 50%
-    if rsi < 50 - context.RSI_SWING:  # buy
-        is_buy = True
-        buy_increment = round(
-            context.MIN_TRADE + context.MAX_BUY * (50.0 - rsi) / 50.0, 1
-        )
-        assert buy_increment > 0
-        log.debug("BUY {}".format(buy_increment))
-    elif rsi > 50 + context.RSI_SWING:  # sell
-        is_sell = True
-        sell_increment = round(
-            context.MIN_TRADE + context.MAX_SELL * (rsi - 50.0) / 50.0, 1
-        )
-        assert sell_increment > 0
-        log.debug("SELL! {}".format(sell_increment))
+
+    weights = []
+    rsi_pressure = 0.0
+    for i, rsi in enumerate(rsis):
+        n = context.TIMEPERIODS[i]  # timeperiod for rsi i
+        weight = reduce(
+            lambda x, func: func(x),
+            repeat(math.log1p, n),
+            n
+        ) / 100.0 / len(rsis)
+        weights.append(weight)
+        weighted_rsi_contrib = weight * (rsi - 50.0)
+        rsi_pressure += weighted_rsi_contrib
+    rsi_pressure = rsi_pressure / sum(weights) / 100.0
+
+    # === center-forcing towards target position percent
+    position_distance = context.TARGET_POSITION_PERCENT - percent_asset*100
+    # max_acceptable_distance = min(
+    #     context.TARGET_POSITION_PERCENT,
+    #     100.0 - context.TARGET_POSITION_PERCENT
+    # ) / 100.0
+    max_acceptable_distance = 50
+    centering_force = position_distance / max_acceptable_distance
+
+    print(
+        "forces: "
+        "\n\t" + str(rsi_pressure) + " rsi"
+        "\n\t" + str(centering_force) + " centering"
+    )
+    # === weighted sum forces of all suggestions
+    # all forces should be bounded [-1, 1]
+    forces = [rsi_pressure, centering_force]
+    weights = [3, 1]
+    numpy.average(forces, weights=weights)
+    # TODO: enforce bounds for each force
+    n_forces = 2
+    net_force = (rsi_pressure + centering_force) / n_forces
+    print("netforce: " + str(net_force))
+    amount_to_buy = net_force * context.MAX_TRADE  # portfolio_value / price
+
+    if amount_to_buy > context.MIN_TRADE:
+        try_buy(context, data, amount_to_buy)
     else:
-        pass
-        # log.debug('rsi is ~50%')
-
-    # log.info('base currency available: {cash}'.format(cash=cash))
-    # TODO: wait for open orders to fill:
-    # orders = context.blotter.open_orders
-    # if orders:
-    #     log.info('skipping bar until all open orders execute')
-    #     return
-
-    # TODO: what is all this about?
-    #
+        print("meh")
+    # is_sell = False
     # is_buy = False
-    # cost_basis = None
-    # if context.asset in context.portfolio.positions:
-    #     position = context.portfolio.positions[context.asset]
-    #
-    #     cost_basis = position.cost_basis
-    #     log.info(
-    #         'found {amount} positions with cost basis {cost_basis}'.format(
-    #             amount=position.amount,
-    #             cost_basis=cost_basis
-    #         )
-    #     )
-    #
-    #     if position.amount >= context.TARGET_POSITIONS:
-    #         log.info('reached positions target: {}'.format(position.amount))
-    #         return
-    #
-    #     if price < cost_basis:
-    #         is_buy = True
-    #     elif (
-    #         position.amount > 0 and
-    #         price > cost_basis * (1 + context.PROFIT_TARGET)
-    #     ):
-    #         profit = (price * position.amount)-(cost_basis * position.amount)
-    #         log.info('closing position, taking profit: {}'.format(profit))
-    #         order_target_percent(
-    #             asset=context.asset,
-    #             target=0,
-    #             limit_price=price * (1 - context.SLIPPAGE_ALLOWED),
-    #         )
-    #     else:
-    #         log.info('no buy or sell opportunity found')
-    # else:
+    # # linear scale buy based on distance RSI from 50%
+    # if rsi < 50 - context.RSI_SWING:  # buy
     #     is_buy = True
-    if is_buy:
-        try_buy(context, data, buy_increment)
-    if is_sell:
-        try_buy(context, data, -sell_increment)
-    asset_value = context.portfolio.positions[context.asset].amount / price
+    #     buy_increment = round(
+    #         context.MIN_TRADE + context.MAX_TRADE * (50.0 - rsi) / 50.0, 1
+    #     )
+    #     assert buy_increment > 0
+    #     log.debug("BUY {}".format(buy_increment))
+    # elif rsi > 50 + context.RSI_SWING:  # sell
+    #     is_sell = True
+    #     sell_increment = round(
+    #         context.MIN_TRADE + context.MAX_TRADE * (rsi - 50.0) / 50.0, 1
+    #     )
+    #     assert sell_increment > 0
+    #     log.debug("SELL! {}".format(sell_increment))
+    # else:
+    #     pass
+    #     # log.debug('rsi is ~50%')
+    #
+    # # log.info('base currency available: {cash}'.format(cash=cash))
+    # # TODO: wait for open orders to fill:
+    # # orders = context.blotter.open_orders
+    # # if orders:
+    # #     log.info('skipping bar until all open orders execute')
+    # #     return
+    #
+    # # TODO: what is all this about?
+    # #
+    # # is_buy = False
+    # # cost_basis = None
+    # # if context.asset in context.portfolio.positions:
+    # #     position = context.portfolio.positions[context.asset]
+    # #
+    # #     cost_basis = position.cost_basis
+    # #     log.info(
+    # #         'found {amount} positions with cost basis {cost_basis}'.format(
+    # #             amount=position.amount,
+    # #             cost_basis=cost_basis
+    # #         )
+    # #     )
+    # #
+    # #     if position.amount >= context.TARGET_POSITIONS:
+    # #         log.info('reached positions target: {}'.format(position.amount))
+    # #         return
+    # #
+    # #     if price < cost_basis:
+    # #         is_buy = True
+    # #     elif (
+    # #         position.amount > 0 and
+    # #         price > cost_basis * (1 + context.PROFIT_TARGET)
+    # #     ):
+    # #         profit = (price * position.amount)-(cost_basis * position.amount)
+    # #         log.info('closing position, taking profit: {}'.format(profit))
+    # #         order_target_percent(
+    # #             asset=context.asset,
+    # #             target=0,
+    # #             limit_price=price * (1 - context.SLIPPAGE_ALLOWED),
+    # #         )
+    # #     else:
+    # #         log.info('no buy or sell opportunity found')
+    # # else:
+    # #     is_buy = True
+    # if is_buy:
+    #     try_buy(context, data, buy_increment)
+    # if is_sell:
+    #     try_buy(context, data, -sell_increment)
     record(
         price=price,
+        rsis=rsis,
         rsi_2=rsis[0],  # TODO: be more clever here
         rsi_4=rsis[1],
         rsi_8=rsis[2],
         rsi_16=rsis[3],
+        # weight_2=weights[0],
+        # weight_4=weights[1],
+        # weight_8=weights[2],
+        # weight_16=weights[3],
         cash=cash,
         volume=data.current(context.asset, 'volume'),
         starting_cash=context.portfolio.starting_cash,
         positions_asset=asset_value,
-        percent_asset=asset_value / (asset_value + cash),
+        percent_asset=percent_asset,
         leverage=context.account.leverage,
+        rsi_pressure=rsi_pressure,
+        centering_force=centering_force,
+        net_force=net_force,
+        amount_to_buy=amount_to_buy,
     )
 
 
@@ -169,10 +232,6 @@ def try_buy(context, data, increment):
     is_sell = increment < 0
     price = data.current(context.asset, 'price')
     if is_buy:
-        # if buy_increment is None:
-        #     log.info('the rsi is too high to consider buying {}'.format(rsi))
-        #     return
-        #
         if price * increment > context.portfolio.cash:
             log.info('not enough base currency buy')
             return False

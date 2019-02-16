@@ -175,13 +175,27 @@ def analyze(context, perf):
             'longs_count',
             'shorts_count',
 
-            'rsi_2',
-            'rsi_4',
-            'rsi_8',
-            'rsi_16',
             'volume',  # too big magnitude; throws off scale of others
         ],
         outfile_name="figures/horizon.png",
+    )
+    horizon(
+        perf,
+        varnames=[
+            'rsi_16',
+            'rsi_8',
+            'rsi_4',
+            'rsi_2',
+            # 'weight_2',
+            # 'weight_4',
+            # 'weight_8',
+            # 'weight_16',
+            'rsi_pressure',
+            'centering_force',
+            'net_force',
+            'amount_to_buy',
+        ],
+        outfile_name="figures/forces.png",
     )
     horizon(
         perf,
