@@ -39,19 +39,35 @@ def initialize(context):
 
     # TODO: declare predictors like this (?):
     context.indicators = {
-        "rsi_02": {
+        "rsi_05": {
             "fn": FlexyIndicator(
                 fn=_get_rsi,
                 fn_kwargs={"period": 5},
                 a_p_std=34.13, a_p_mean=50
             ),
-            "weight": 4
+            "weight": 1
+        },
+        "rsi_15": {
+            "fn": FlexyIndicator(
+                fn=_get_rsi,
+                fn_kwargs={"period": 15},
+                a_p_std=34.13, a_p_mean=50
+            ),
+            "weight": 2
+        },
+        "rsi_60": {
+            "fn": FlexyIndicator(
+                fn=_get_rsi,
+                fn_kwargs={"period": 60},
+                a_p_std=34.13, a_p_mean=50
+            ),
+            "weight": 2
         },
         "centering": {
             "fn": FlexyIndicator(
                 fn=_get_centering_force
             ),
-            "weight": 1
+            "weight": 2
         }
     }
 
@@ -67,6 +83,8 @@ def initialize(context):
 
 def _get_rsi(context, data, period):
     # === get RSI suggestion
+    # RSI > 50 means buy
+    # RSI < 50 means sell
     # RSI pressure is > 0 if buy suggested, < 0 if sell suggested
     # bounded [0, 100]
     freq = get_environment('data_frequency')
@@ -128,38 +146,20 @@ def _handle_data(context, data):
     net_force = numpy.average(forces_arry, weights=weights)
     amount_to_buy = net_force * context.MAX_TRADE  # portfolio_value / price
 
-    if amount_to_buy > context.MIN_TRADE:
+    if -context.MIN_TRADE > amount_to_buy or amount_to_buy > context.MIN_TRADE:
         print("netforce: " + str(net_force))
         print("\tsubforces: ")
         for i, name in enumerate(names):
-            print("\t\t{}:{}(x){}".format(
+            print("\t\t{: >9s}:{:d}(x){:+f}".format(
                 name, weights[i], forces[name]
             ))
         try_buy(context, data, amount_to_buy)
     else:
+        amount_to_buy = 0
         pass
         # print("meh")
     # is_sell = False
     # is_buy = False
-    # # linear scale buy based on distance RSI from 50%
-    # if rsi < 50 - context.RSI_SWING:  # buy
-    #     is_buy = True
-    #     buy_increment = round(
-    #         context.MIN_TRADE + context.MAX_TRADE * (50.0 - rsi) / 50.0, 1
-    #     )
-    #     assert buy_increment > 0
-    #     log.debug("BUY {}".format(buy_increment))
-    # elif rsi > 50 + context.RSI_SWING:  # sell
-    #     is_sell = True
-    #     sell_increment = round(
-    #         context.MIN_TRADE + context.MAX_TRADE * (rsi - 50.0) / 50.0, 1
-    #     )
-    #     assert sell_increment > 0
-    #     log.debug("SELL! {}".format(sell_increment))
-    # else:
-    #     pass
-    #     # log.debug('rsi is ~50%')
-    #
     # # log.info('base currency available: {cash}'.format(cash=cash))
     # # TODO: wait for open orders to fill:
     # # orders = context.blotter.open_orders
@@ -213,7 +213,7 @@ def _handle_data(context, data):
     #     try_buy(context, data, -sell_increment)
     record(
         price=price,
-        rsi_02=forces,
+        forces=forces,
         cash=cash,
         volume=data.current(context.asset, 'volume'),
         starting_cash=context.portfolio.starting_cash,

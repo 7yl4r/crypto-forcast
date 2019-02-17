@@ -65,15 +65,22 @@ def val_cash_portfolio_check(perf_data):
     plt.clf()
 
 
-def horizon(perf_data, varnames, outfile_name):
+def horizon(perf_data, outfile_name, varnames=None, vars=None):
+    assert varnames is None or vars is None  # not both
+    if varnames is not None:
+        da_y = [
+            list(perf_data.loc[:, [vname]][vname].values)
+            for vname in varnames
+        ]
+    elif vars is not None:
+        da_y = list(vars.values())
+        varnames = list(vars.keys())
+    else:
+        raise AssertionError("both vars & varnames == None")
     plt.clf()
     # data = perf_data.loc[:, [vname]]
     # print(dir(data))
     # print(data)
-    da_y = [
-        list(perf_data.loc[:, [vname]][vname].values)
-        for vname in varnames
-    ]
     print('---da_y--------------------------')
     print('max={} | min={} | len=[{}x{}]'.format(
         max(max(da_y)), min(min(da_y)), len(da_y), len(da_y[0])
@@ -156,46 +163,43 @@ def tutorial_plt2(context, results):
     plt.clf()
 
 
+def _data_arry(vname, perf):
+    return list(perf.loc[:, [vname]][vname].values)
+
+
 def analyze(context, perf):
+
     horizon(
         perf,
         varnames=[
             'portfolio_value',
             # 'price_change',  # KeyError
-
             'ending_cash',
-            "gross_leverage",
+            'gross_leverage',
 
             'net_leverage',
             'ending_value',
             'short_exposure',
-
             'long_exposure',
 
             'longs_count',
             'shorts_count',
 
-            'volume',  # too big magnitude; throws off scale of others
+            # too big magnitude; throws off scale of others
+            'volume',
         ],
         outfile_name="figures/horizon.png",
     )
+    force_vars = {
+        'amount_to_buy': _data_arry("amount_to_buy", perf),
+        'net_force': _data_arry("net_force", perf),
+    }
+    forces = list(perf.loc[:, ["forces"]]["forces"].values)
+    for fname in forces[0]:
+        force_vars[fname] = [f[fname] for f in forces]
     horizon(
         perf,
-        varnames=[
-            # 'rsi_16',
-            # 'rsi_8',
-            # 'rsi_4',
-            # 'rsi_2',
-            # 'rsi_02',
-            # 'weight_2',
-            # 'weight_4',
-            # 'weight_8',
-            # 'weight_16',
-            # 'rsi_pressure',
-            # 'centering_force',
-            'net_force',
-            'amount_to_buy',
-        ],
+        vars=force_vars,
         outfile_name="figures/forces.png",
     )
     horizon(
