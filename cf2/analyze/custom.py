@@ -186,6 +186,7 @@ def analyze(context, perf):
             'rsi_8',
             'rsi_4',
             'rsi_2',
+            'rsi_02',
             # 'weight_2',
             # 'weight_4',
             # 'weight_8',
@@ -215,6 +216,7 @@ def analyze(context, perf):
     distribution_check(
         perf,
         [
+            'rsi_02',
             'rsi_2',
             'rsi_4',
             'rsi_8',
@@ -239,7 +241,7 @@ def distribution_check(perf_data, vnames):
             # range=(0, 100),
         )
         plt.ylabel(vname)
-        plt.xlim(0, 100)
+        plt.xlim(-1, 1)
     plt.savefig("figures/distributions.png", bbox_inches='tight')
 
 

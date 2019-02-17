@@ -27,7 +27,7 @@ def initialize(context):
 
     # === alrgorithm calculation settings
     # TODO: scale these according to portfolio balance
-    context.TIMEPERIODS = [5, 15, 100, 1000]
+    context.TIMEPERIODS = [5, 5, 5, 5]
     context.RSI_SWING = 30  # how far on either side of RSI 50 before buy/sell
 
     # === buy/sell order settings
@@ -42,9 +42,13 @@ def initialize(context):
     context.PROFIT_TARGET = 0.1
 
     # TODO: declare predictors like this (?):
-    context.predictors = {
-        "rsi": {
-            "fn": FlexyIndicator(fn=get_rsi),
+    context.indicators = {
+        "rsi_02": {
+            "fn": FlexyIndicator(
+                fn=_get_rsi,
+                fn_kwargs={"period": 5},
+                a_p_std=34.13, a_p_mean=50
+            ),
             "weight": 4
         },
         "centering": {
@@ -63,7 +67,7 @@ def initialize(context):
     pass
 
 
-def get_rsi(context, data):
+def _get_rsi(context, data, period):
     freq = get_environment('data_frequency')
     if freq == 'daily':
         rsi_freq = '1D'
@@ -71,17 +75,20 @@ def get_rsi(context, data):
         rsi_freq = '1m'
     else:
         raise ValueError('unknown data_freq "{}"'.format(freq))
+    prices = data.history(
+        context.asset,
+        fields='price',
+        bar_count=period*3,  # TODO: what value should this be?
+        frequency=rsi_freq
+    )
+    return talib.RSI(prices.values, timeperiod=period)[-1]
 
+
+def get_rsi(context, data):
     # Relative Strength Index (RSI)
     rsis = []
     for time_period in context.TIMEPERIODS:
-        prices = data.history(
-            context.asset,
-            fields='price',
-            bar_count=time_period*3,  # TODO: what value should this be?
-            frequency=rsi_freq
-        )
-        rsis.append(talib.RSI(prices.values, timeperiod=time_period)[-1])
+        rsis.append(_get_rsi(context, data, time_period))
         # log.debug('got rsi: {}'.format(rsi))
 
     return rsis
@@ -187,7 +194,9 @@ def _handle_data(context, data):
     # #     )
     # #
     # #     if position.amount >= context.TARGET_POSITIONS:
-    # #         log.info('reached positions target: {}'.format(position.amount))
+    # #         log.info(
+    # #             'reached positions target: {}'.format(position.amount)
+    # #         )
     # #         return
     # #
     # #     if price < cost_basis:
@@ -196,7 +205,9 @@ def _handle_data(context, data):
     # #         position.amount > 0 and
     # #         price > cost_basis * (1 + context.PROFIT_TARGET)
     # #     ):
-    # #         profit = (price * position.amount)-(cost_basis * position.amount)
+    # #         profit = (
+    # #             (price * position.amount)-(cost_basis * position.amount)
+    # #         )
     # #         log.info('closing position, taking profit: {}'.format(profit))
     # #         order_target_percent(
     # #             asset=context.asset,
@@ -211,8 +222,10 @@ def _handle_data(context, data):
     #     try_buy(context, data, buy_increment)
     # if is_sell:
     #     try_buy(context, data, -sell_increment)
+    rsi_02 = context.indicators["rsi_02"]["fn"].get_value(context, data)
     record(
         price=price,
+        rsi_02=rsi_02,
         rsis=rsis,
         rsi_2=rsis[0],  # TODO: be more clever here
         rsi_4=rsis[1],
