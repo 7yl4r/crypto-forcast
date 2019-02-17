@@ -26,10 +26,6 @@ def initialize(context):
     context.asset = symbol(context.ASSET_NAME)
 
     # === alrgorithm calculation settings
-    # TODO: scale these according to portfolio balance
-    context.TIMEPERIODS = [5, 5, 5, 5]
-    context.RSI_SWING = 30  # how far on either side of RSI 50 before buy/sell
-
     # === buy/sell order settings
     # TODO: scale these according to portfolio balance
     context.MIN_TRADE = 0.1
@@ -52,7 +48,9 @@ def initialize(context):
             "weight": 4
         },
         "centering": {
-            "fn": lambda x: x,
+            "fn": FlexyIndicator(
+                fn=_get_centering_force
+            ),
             "weight": 1
         }
     }
@@ -68,6 +66,9 @@ def initialize(context):
 
 
 def _get_rsi(context, data, period):
+    # === get RSI suggestion
+    # RSI pressure is > 0 if buy suggested, < 0 if sell suggested
+    # bounded [0, 100]
     freq = get_environment('data_frequency')
     if freq == 'daily':
         rsi_freq = '1D'
@@ -84,17 +85,7 @@ def _get_rsi(context, data, period):
     return talib.RSI(prices.values, timeperiod=period)[-1]
 
 
-def get_rsi(context, data):
-    # Relative Strength Index (RSI)
-    rsis = []
-    for time_period in context.TIMEPERIODS:
-        rsis.append(_get_rsi(context, data, time_period))
-        # log.debug('got rsi: {}'.format(rsi))
-
-    return rsis
-
-
-def _handle_data(context, data):
+def _get_centering_force(context, data):
     price = data.current(context.asset, 'price')
     cash = context.portfolio.cash
 
@@ -102,26 +93,8 @@ def _handle_data(context, data):
     # n coins * BTC/coin = asset_value (in BTC)
     asset_value = n_coins * price
     portfolio_value = asset_value + cash
+
     percent_asset = asset_value / portfolio_value
-    # === get RSI suggestion
-    # RSI pressure is > 0 if buy suggested, < 0 if sell suggested
-    # bounded [-1, 1]
-    rsis = get_rsi(context, data)
-
-    weights = []
-    rsi_pressure = 0.0
-    for i, rsi in enumerate(rsis):
-        n = context.TIMEPERIODS[i]  # timeperiod for rsi i
-        weight = reduce(
-            lambda x, func: func(x),
-            repeat(math.log1p, n),
-            n
-        ) / 100.0 / len(rsis)
-        weights.append(weight)
-        weighted_rsi_contrib = weight * (rsi - 50.0)
-        rsi_pressure += weighted_rsi_contrib
-    rsi_pressure = rsi_pressure / sum(weights) / 100.0
-
     # === center-forcing towards target position percent
     position_distance = context.TARGET_POSITION_PERCENT - percent_asset*100
     # max_acceptable_distance = min(
@@ -129,23 +102,39 @@ def _handle_data(context, data):
     #     100.0 - context.TARGET_POSITION_PERCENT
     # ) / 100.0
     max_acceptable_distance = 50
-    centering_force = position_distance / max_acceptable_distance
+    return position_distance / max_acceptable_distance
+
+
+def _handle_data(context, data):
+    price = data.current(context.asset, 'price')
+    n_coins = context.portfolio.positions[context.asset].amount
+    asset_value = n_coins * price
+    cash = context.portfolio.cash
+    portfolio_value = asset_value + cash
+    percent_asset = asset_value / portfolio_value
 
     # === weighted sum forces of all suggestions
     # all forces should be bounded [-1, 1]
-    forces = [rsi_pressure, centering_force]
-    weights = [3, 1]  # TODO: set these in context?
-    # TODO: enforce bounds for each force
-    net_force = numpy.average(forces, weights=weights)
+    weights = []
+    forces_arry = []
+    names = []
+    forces = {}
+    for key in context.indicators.keys():
+        names.append(key)
+        raw_force = context.indicators[key]["fn"].get_value(context, data)
+        forces_arry.append(raw_force)
+        forces[key] = raw_force  # TODO: should this be * weight
+        weights.append(context.indicators[key]["weight"])
+    net_force = numpy.average(forces_arry, weights=weights)
     amount_to_buy = net_force * context.MAX_TRADE  # portfolio_value / price
 
     if amount_to_buy > context.MIN_TRADE:
-        print(
-            "forces: "
-            "\n\t" + str(rsi_pressure) + " rsi"
-            "\n\t" + str(centering_force) + " centering"
-        )
         print("netforce: " + str(net_force))
+        print("\tsubforces: ")
+        for i, name in enumerate(names):
+            print("\t\t{}:{}(x){}".format(
+                name, weights[i], forces[name]
+            ))
         try_buy(context, data, amount_to_buy)
     else:
         pass
@@ -222,27 +211,15 @@ def _handle_data(context, data):
     #     try_buy(context, data, buy_increment)
     # if is_sell:
     #     try_buy(context, data, -sell_increment)
-    rsi_02 = context.indicators["rsi_02"]["fn"].get_value(context, data)
     record(
         price=price,
-        rsi_02=rsi_02,
-        rsis=rsis,
-        rsi_2=rsis[0],  # TODO: be more clever here
-        rsi_4=rsis[1],
-        rsi_8=rsis[2],
-        rsi_16=rsis[3],
-        # weight_2=weights[0],
-        # weight_4=weights[1],
-        # weight_8=weights[2],
-        # weight_16=weights[3],
+        rsi_02=forces,
         cash=cash,
         volume=data.current(context.asset, 'volume'),
         starting_cash=context.portfolio.starting_cash,
         positions_asset=asset_value,
         percent_asset=percent_asset,
         leverage=context.account.leverage,
-        rsi_pressure=rsi_pressure,
-        centering_force=centering_force,
         net_force=net_force,
         amount_to_buy=amount_to_buy,
     )
@@ -294,13 +271,11 @@ def _hand_data_dumb(context, data):
     """Stupid always-buy for testing purposes only"""
     price = data.current(context.asset, 'price')
     cash = context.portfolio.cash
-    rsi = get_rsi(context, data)
     try_buy(
         context, data, context.MIN_TRADE,
     )
     record(
         price=price,
-        rsi=rsi,
         cash=cash,
         volume=data.current(context.asset, 'volume'),
         starting_cash=context.portfolio.starting_cash,
