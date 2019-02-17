@@ -111,26 +111,25 @@ def _handle_data(context, data):
     max_acceptable_distance = 50
     centering_force = position_distance / max_acceptable_distance
 
-    print(
-        "forces: "
-        "\n\t" + str(rsi_pressure) + " rsi"
-        "\n\t" + str(centering_force) + " centering"
-    )
     # === weighted sum forces of all suggestions
     # all forces should be bounded [-1, 1]
     forces = [rsi_pressure, centering_force]
-    weights = [3, 1]
-    numpy.average(forces, weights=weights)
+    weights = [3, 1]  # TODO: set these in context?
     # TODO: enforce bounds for each force
-    n_forces = 2
-    net_force = (rsi_pressure + centering_force) / n_forces
-    print("netforce: " + str(net_force))
+    net_force = numpy.average(forces, weights=weights)
     amount_to_buy = net_force * context.MAX_TRADE  # portfolio_value / price
 
     if amount_to_buy > context.MIN_TRADE:
+        print(
+            "forces: "
+            "\n\t" + str(rsi_pressure) + " rsi"
+            "\n\t" + str(centering_force) + " centering"
+        )
+        print("netforce: " + str(net_force))
         try_buy(context, data, amount_to_buy)
     else:
-        print("meh")
+        pass
+        # print("meh")
     # is_sell = False
     # is_buy = False
     # # linear scale buy based on distance RSI from 50%
@@ -310,6 +309,6 @@ if __name__ == '__main__':
         exchange_name='binance',
         algo_namespace=ALGO_NAMESPACE,
         quote_currency='btc',
-        start=pd.to_datetime('2018-12-22', utc=True),
-        end=pd.to_datetime('2018-12-23', utc=True),
+        start=pd.to_datetime('2018-09-01', utc=True),
+        end=pd.to_datetime('2018-12-30', utc=True),
     )
