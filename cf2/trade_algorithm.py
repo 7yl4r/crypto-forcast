@@ -146,8 +146,8 @@ def _handle_data(context, data):
     net_force = numpy.average(forces_arry, weights=weights)
     amount_to_buy = net_force * context.MAX_TRADE  # portfolio_value / price
 
-    if -context.MIN_TRADE > amount_to_buy or amount_to_buy > context.MIN_TRADE:
-        print("netforce: " + str(net_force))
+    print("netforce: " + str(net_force))
+    if context.MIN_TRADE < abs(amount_to_buy):
         print("\tsubforces: ")
         for i, name in enumerate(names):
             print("\t\t{: >9s}:{:d}(x){:+f}".format(

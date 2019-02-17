@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 from catalyst.exchange.utils.stats_utils import extract_transactions
 # from catalyst.api import get_environment
@@ -220,13 +221,6 @@ def analyze(context, perf):
     distribution_check(
         perf,
         [
-            # 'rsi_02',
-            # 'rsi_2',
-            # 'rsi_4',
-            # 'rsi_8',
-            # 'rsi_16',
-            # 'rsi_pressure',
-            # 'centering_force',
             'net_force',
         ]
     )
@@ -234,11 +228,21 @@ def analyze(context, perf):
 
 def distribution_check(perf_data, vnames):
     plt.clf()
+    data_frames = []
+    for vname in vnames:
+        data_frames.append(perf_data.loc[:, vname])
+    # get force data
+    # forces = perf_data.loc[:, ["forces"]]['forces']
+    forces = list(perf_data.loc[:, ["forces"]]["forces"].values)
+    for fname in forces[0]:
+        data_frames.append(pd.Series([f[fname] for f in forces]))
+        vnames.append(fname)
+
     cols = 1
-    rows = len(vnames)+1
+    rows = len(vnames)
     for n, vname in enumerate(vnames):
         ax_n = plt.subplot(rows, cols, n+1)
-        data_frame = perf_data.loc[:, vname]
+        data_frame = data_frames[n]
         data_frame.plot.hist(
             ax=ax_n,
             # label=vname,
