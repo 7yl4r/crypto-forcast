@@ -212,6 +212,35 @@ def analyze(context, perf):
     # perf_tracker = perf.PerformanceTracker(
     #     sim_params, get_calendar("NYSE"), env
     # )
+    distribution_check(
+        perf,
+        [
+            'rsi_2',
+            'rsi_4',
+            'rsi_8',
+            'rsi_16',
+            'rsi_pressure',
+            'centering_force',
+            'net_force',
+        ]
+    )
+
+
+def distribution_check(perf_data, vnames):
+    plt.clf()
+    cols = 1
+    rows = len(vnames)+1
+    for n, vname in enumerate(vnames):
+        ax_n = plt.subplot(rows, cols, n+1)
+        data_frame = perf_data.loc[:, vname]
+        data_frame.plot.hist(
+            ax=ax_n,
+            # label=vname,
+            # range=(0, 100),
+        )
+        plt.ylabel(vname)
+        plt.xlim(0, 100)
+    plt.savefig("figures/distributions.png", bbox_inches='tight')
 
 
 def tutorial_plt1(context, perf):

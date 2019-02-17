@@ -14,6 +14,7 @@ import pandas as pd
 import numpy
 
 from analyze.custom import analyze
+from FlexyIndicator import FlexyIndicator
 
 ALGO_NAMESPACE = 'buy_the_dip_live'
 log = Logger('buy low sell high')
@@ -39,6 +40,18 @@ def initialize(context):
 
     # NOTE: I don't kwow what these are and what they do:
     context.PROFIT_TARGET = 0.1
+
+    # TODO: declare predictors like this (?):
+    context.predictors = {
+        "rsi": {
+            "fn": FlexyIndicator(fn=get_rsi),
+            "weight": 4
+        },
+        "centering": {
+            "fn": lambda x: x,
+            "weight": 1
+        }
+    }
 
     context.errors = []
 
@@ -299,6 +312,13 @@ def handle_data(context, data):
 
 
 if __name__ == '__main__':
+    # === long:
+    # t0 = pd.to_datetime('2018-09-01', utc=True)
+    # tf = pd.to_datetime('2018-12-30', utc=True)
+    # === short
+    t0 = pd.to_datetime('2018-12-21', utc=True)
+    tf = pd.to_datetime('2018-12-22', utc=True)
+
     run_algorithm(
         live=False,  # set this to true to lose all your money
         capital_base=1,  # starting captial
@@ -309,6 +329,6 @@ if __name__ == '__main__':
         exchange_name='binance',
         algo_namespace=ALGO_NAMESPACE,
         quote_currency='btc',
-        start=pd.to_datetime('2018-09-01', utc=True),
-        end=pd.to_datetime('2018-12-30', utc=True),
+        start=t0,
+        end=tf,
     )
