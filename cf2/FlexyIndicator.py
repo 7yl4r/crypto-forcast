@@ -1,3 +1,5 @@
+import scipy.stats as st
+
 class FlexyIndicator(object):
     """
     Base Indicator with slightly flexible settings.
@@ -44,5 +46,7 @@ class FlexyIndicator(object):
         +1 == mean + std*4
         -1 == mean - std*4
         """
-        return (value - self.mean) / (self.std * 4)
+        std_score = (value - self.mean) / self.std
+        # return std_score/(4)  # rough linear approx
+        return st.norm.cdf(std_score)-0.50
         # TODO: cut off out of bounds [-1, 1]

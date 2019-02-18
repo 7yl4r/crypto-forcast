@@ -20,7 +20,6 @@ def initialize(context):
     log.info('initializing algo')
     context.ASSET_NAME = 'eth_btc'
     context.asset = symbol(context.ASSET_NAME)
-
     # === alrgorithm calculation settings
     # === buy/sell order settings
     # TODO: scale these according to portfolio balance
@@ -29,6 +28,7 @@ def initialize(context):
     context.SLIPPAGE_ALLOWED = 0.02  # [%]
 
     context.TARGET_POSITION_PERCENT = 50.0
+    context.MAX_TARGET_DEVIATION = 40.0
     # # === TODO: set initial amount to target percent
     # cash = context.portfolio.cash
     # coins_value = cash * context.TARGET_POSITION_PERCENT / 100
@@ -46,36 +46,54 @@ def initialize(context):
 
     # declare predictors
     context.indicators = {
-        "rsi_05": {
-            "fn": FlexyIndicator(
-                fn=_get_rsi,
-                fn_kwargs={"period": 5},
-                a_p_std=34.13, a_p_mean=50
-            ),
-            "weight": 1
-        },
-        "rsi_15": {
-            "fn": FlexyIndicator(
-                fn=_get_rsi,
-                fn_kwargs={"period": 15},
-                a_p_std=34.13, a_p_mean=50
-            ),
-            "weight": 2
-        },
+        # "rsi_03": {
+        #     "fn": FlexyIndicator(
+        #         fn=_get_rsi,
+        #         fn_kwargs={"period": 3},
+        #         a_p_std=34.13, a_p_mean=50
+        #     ),
+        #     "weight": 1
+        # },
+        # "rsi_07": {
+        #     "fn": FlexyIndicator(
+        #         fn=_get_rsi,
+        #         fn_kwargs={"period": 7},
+        #         a_p_std=34.13, a_p_mean=50
+        #     ),
+        #     "weight": 1
+        # },
         "rsi_60": {
             "fn": FlexyIndicator(
                 fn=_get_rsi,
                 fn_kwargs={"period": 60},
                 a_p_std=34.13, a_p_mean=50
             ),
-            "weight": 2
+            "weight": 1
         },
         "centering": {
             "fn": FlexyIndicator(
-                fn=_get_centering_force
+                fn=_get_centering_force,
             ),
-            "weight": 4
-        }
+            "weight": 1
+        },
+        "mavg_360": {
+            "fn": FlexyIndicator(
+                fn=_get_mavg,
+                fn_kwargs={"window": 360},
+                a_p_std=0.001,
+                a_p_mean=0
+            ),
+            "weight": 1
+        },
+        "mavg_15": {
+            "fn": FlexyIndicator(
+                fn=_get_mavg,
+                fn_kwargs={"window": 15},
+                a_p_std=0.0001,
+                a_p_mean=0
+            ),
+            "weight": 1
+        },
     }
 
     context.errors = []
@@ -85,6 +103,28 @@ def initialize(context):
     # constant to scale the price of up to that of a full coin if desired.
     context.TICK_SIZE = 1000.0
     pass
+
+
+def _get_mavg(context, data, window=10):
+    freq = get_environment('data_frequency')
+    assert freq == 'minute'
+
+    # Compute moving averages calling data.history() for each
+    # moving average with the appropriate parameters. We choose to use
+    # minute bars for this simulation -> freq="1m"
+    # Returns a pandas dataframe.
+    df = data.history(
+        context.asset,
+        'price',
+        bar_count=window,
+        frequency="1m",  # "1T",
+    )
+    mavg = df.mean()
+    # price = data.current(context.asset, 'price')
+    price = df[-1]  # data.current(context.asset, 'price')
+    diff = mavg - price
+    # print("{} - {} = {}".format(price, mavg, diff))
+    return diff
 
 
 def _get_rsi(context, data, period):
@@ -125,7 +165,7 @@ def _get_centering_force(context, data):
     #     context.TARGET_POSITION_PERCENT,
     #     100.0 - context.TARGET_POSITION_PERCENT
     # ) / 100.0
-    max_acceptable_distance = 50
+    max_acceptable_distance = context.MAX_TARGET_DEVIATION
     return position_distance / max_acceptable_distance
 
 
@@ -259,7 +299,7 @@ def try_buy(context, data, increment):
         return True
     elif is_sell:
         if (
-            price * increment >
+            abs(increment) >
             context.portfolio.positions[context.asset].amount
         ):
             log.info('not enough asset to sell')
