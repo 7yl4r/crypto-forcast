@@ -311,7 +311,7 @@ if __name__ == '__main__':
     # tf = pd.to_datetime('2018-12-30', utc=True)
     # === short
     t0 = pd.to_datetime('2018-12-21', utc=True)
-    tf = pd.to_datetime('2018-12-22', utc=True)
+    tf = pd.to_datetime('2018-12-21', utc=True)
 
     run_algorithm(
         live=False,  # set this to true to lose all your money

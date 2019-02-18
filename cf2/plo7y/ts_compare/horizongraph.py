@@ -29,16 +29,19 @@ class InputError(Exception):
 
 
 class Horizon(object):
+    def __init__(self, data_transformers=[]):
+        if data_transformers == []:
+            data_transformers = [TimeZeroCenteredDataTransformer()]
+        self.data_transformers = data_transformers
 
     # public methods
-
     def run(
         self, x, y, labels, figsize=(20, 3), bands=3,
         colors=(
             # dark blue, med blue, light blue, dark red, med red, light red
             "#8BBCD4", "#2B7ABD", "#0050A0", "#EF9483", "#E02421", "#A90E0A"
         ),
-        transformer=TimeZeroCenteredDataTransformer
+        data_trans_indexes=[]
     ):
         """Return the entire graph and its plt object
 
@@ -68,19 +71,30 @@ class Horizon(object):
         plt object
         """
         self.check_valid_params(x, y, labels, figsize, bands, colors)
-        n = len(y)
-
         F = self.create_figure(figsize)
-        self.data_munger = transformer(y, bands)
 
+        n = len(y)
+        if data_trans_indexes == []:
+            data_trans_indexes = [0]*n
+        else:
+            assert len(data_trans_indexes) == len(y)
+
+        # set up the data transformers
         for i in range(n):
+            data_munger = self.data_transformers[data_trans_indexes[i]]
+            data_munger.set_bands(bands)
+            data_munger.add_series(y[i])
+
+        # transform the data into bands
+        for i in range(n):
+            data_munger = self.data_transformers[data_trans_indexes[i]]
             ax = F.add_subplot(n, 1, i+1)
-            transformed_x, bands = self.data_munger.transform(y[i], x)
+            transformed_x, bands = data_munger.transform(y[i], x)
 
             for idx, band in enumerate(bands):
                 ax.fill_between(transformed_x[idx], 0, band, color=colors[idx])
 
-            self.adjust_visuals_line(x, y[i], self.data_munger, ax, i, labels)
+            self.adjust_visuals_line(x, y[i], data_munger, ax, i, labels)
 
         return plt
 
@@ -95,10 +109,10 @@ class Horizon(object):
         ax.get_yaxis().set_visible(False)
         ax.get_xaxis().set_visible(False)
 
-    def adjust_visuals_line(self, x, y, df, ax, i, labels):
+    def adjust_visuals_line(self, x, y, data_munger, ax, i, labels):
         """Adjusts the subplot: height, width, labels"""
         plt.xlim(0, x[-1])
-        plt.ylim(0, df.get_max()/3)
+        plt.ylim(0, data_munger.get_max()/3)
         self.set_theme(ax)
         ax.get_yaxis().set_visible(True)
         ax.set_yticks([])
@@ -106,9 +120,9 @@ class Horizon(object):
         label = (
             '(+/-){:1.0E} {}\n    {:+1.0E}'
         ).format(
-            self.data_munger.get_y_label_max(y),
+            data_munger.get_y_label_max(y),
             labels[i],
-            self.data_munger.get_y_label_min(y),
+            data_munger.get_y_label_min(y),
         )
         font_p = FontProperties()
         font_p.set_family('monospace')

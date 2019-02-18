@@ -9,7 +9,7 @@ class SharedAxisDataTransformer(object):
     Transforms x & y data for horizongraphs all having shared x & y.
     """
 
-    def __init__(self, y, bands):
+    def __init__(self):
         """
         y: array of all y-values
         bands: number of bands
@@ -17,11 +17,14 @@ class SharedAxisDataTransformer(object):
         self.min = 0
         self.max = 0
 
-        self.num_band = bands
         self.band = 0
-        self.set_data(y)
+        self.data = []
 
     # public methods
+
+    def set_bands(self, bands):
+        self.num_band = bands
+
     def get_max(self):
         """Returns the maximum y-value"""
         return self.max
@@ -102,8 +105,7 @@ class SharedAxisDataTransformer(object):
 
         return x1, ret
 
-    # private methods
-    def set_data(self, data):
+    def add_series(self, series):
         """Instantiates all data-related properties.
 
         Keyword arguments:
@@ -112,6 +114,8 @@ class SharedAxisDataTransformer(object):
         band: maximum number of y-values divided by the number of bands.
         max/min is set according to the values in data
         """
+        self.data.append(series)
+        data = self.data
         self.max = max(max(data))
         self.min = min(min(data))
 
@@ -122,6 +126,7 @@ class SharedAxisDataTransformer(object):
             self.max = self.min * -1
 
         self.band = self.max / self.num_band
+    # private methods
 
     def transform_number(self, y1, top, bottom):
         """Calculates the new y-value for a specific value and band
