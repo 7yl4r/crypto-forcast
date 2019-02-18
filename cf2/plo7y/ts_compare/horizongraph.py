@@ -76,8 +76,12 @@ class Horizon(object):
         n = len(y)
         if data_trans_indexes == []:
             data_trans_indexes = [0]*n
-        else:
-            assert len(data_trans_indexes) == len(y)
+        elif len(data_trans_indexes) != len(y):
+            raise AssertionError(
+                "# data transformer indexes ({}) must == # series ({})".format(
+                    len(data_trans_indexes), len(y)
+                )
+            )
 
         # set up the data transformers
         for i in range(n):

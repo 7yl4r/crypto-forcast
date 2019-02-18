@@ -6,6 +6,12 @@ from catalyst.exchange.utils.stats_utils import extract_transactions
 # from catalyst.api import get_environment
 
 from plo7y.ts_compare.horizongraph import Horizon
+from plo7y.ts_compare.horizon_data_transformers \
+    import TimeZeroCenteredDataTransformer
+from plo7y.ts_compare.horizon_data_transformers \
+    import SharedAxisDataTransformer
+from plo7y.ts_compare.horizon_data_transformers \
+    import MeanCenteredDataTransformer
 
 DPI = None  # 100
 PLT_SIZE = (9, 5)
@@ -66,7 +72,9 @@ def val_cash_portfolio_check(perf_data):
     plt.clf()
 
 
-def horizon(perf_data, outfile_name, varnames=None, vars=None):
+def horizon(
+    perf_data, outfile_name, varnames=None, vars=None, dat_trans=[], dti=[]
+):
     assert varnames is None or vars is None  # not both
     if varnames is not None:
         da_y = [
@@ -95,7 +103,9 @@ def horizon(perf_data, outfile_name, varnames=None, vars=None):
     labels = varnames  # ['portfolio_value']
     print('{} =?= {}'.format(len(da_y), len(labels)))
 
-    plot = Horizon().run(da_x, da_y, labels, bands=3, figsize=PLT_SIZE)
+    plot = Horizon(data_transformers=dat_trans).run(
+        da_x, da_y, labels, bands=3, figsize=PLT_SIZE, data_trans_indexes=dti
+    )
 
     plot.subplots_adjust(left=0.01, right=0.998, top=0.99, bottom=0.01)
     plt.savefig(outfile_name, dpi=DPI)
@@ -189,6 +199,11 @@ def analyze(context, perf):
             # too big magnitude; throws off scale of others
             'volume',
         ],
+        dat_trans=[
+            TimeZeroCenteredDataTransformer(),
+            MeanCenteredDataTransformer()
+        ],
+        dti=[0]*9 + [1],
         outfile_name="figures/horizon.png",
     )
     force_vars = {
@@ -203,6 +218,12 @@ def analyze(context, perf):
         perf,
         vars=force_vars,
         outfile_name="figures/forces.png",
+        dat_trans=[
+            TimeZeroCenteredDataTransformer(),
+            MeanCenteredDataTransformer(),
+            SharedAxisDataTransformer(),
+        ],
+        dti=[1, 1] + [2]*(len(force_vars)-2),
     )
     horizon(
         perf,
@@ -212,6 +233,11 @@ def analyze(context, perf):
             'percent_asset',
         ],
         outfile_name="figures/portfolio_composition.png",
+        dat_trans=[
+            TimeZeroCenteredDataTransformer(),
+            SharedAxisDataTransformer(),
+        ],
+        dti=[1, 0, 1],
     )
     tutorial_plt1(context, perf)
     tutorial_plt2(context, perf)

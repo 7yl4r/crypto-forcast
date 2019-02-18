@@ -20,7 +20,7 @@ class SharedAxisDataTransformer(object):
         self.band = 0
         self.data = []
 
-    # public methods
+    # === public methods
 
     def set_bands(self, bands):
         self.num_band = bands
@@ -126,8 +126,8 @@ class SharedAxisDataTransformer(object):
             self.max = self.min * -1
 
         self.band = self.max / self.num_band
-    # private methods
 
+    # === private methods
     def transform_number(self, y1, top, bottom):
         """Calculates the new y-value for a specific value and band
         If y1 is larger than top, the maximum band value is returned.
