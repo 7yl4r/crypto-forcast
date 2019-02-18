@@ -25,11 +25,11 @@ def initialize(context):
     # === buy/sell order settings
     # TODO: scale these according to portfolio balance
     context.MIN_TRADE = 0.1
-    context.MAX_TRADE = 0.5
+    context.MAX_TRADE = 1.0
     context.SLIPPAGE_ALLOWED = 0.02  # [%]
 
     context.TARGET_POSITION_PERCENT = 50.0
-    context.MAX_TARGET_DEVIATION = 40.0
+    context.MAX_TARGET_DEVIATION = 50.0
 
     # NOTE: I don't know what PROFIT_TARGET is
     context.PROFIT_TARGET = 0.1
@@ -58,7 +58,7 @@ def initialize(context):
                 fn_kwargs={"period": 60},
                 a_p_std=34.13, a_p_mean=50
             ),
-            "weight": 1
+            "weight": 5
         },
         "centering": {
             "fn": FlexyIndicator(
@@ -73,18 +73,19 @@ def initialize(context):
                 a_p_std=0.001,
                 a_p_mean=0
             ),
-            "weight": 1
+            "weight": 4
         },
         "mavg_15": {
             "fn": FlexyIndicator(
                 fn=_get_mavg,
                 fn_kwargs={"window": 15},
-                a_p_std=0.0001,
+                a_p_std=0.0002,
                 a_p_mean=0
             ),
-            "weight": 1
+            "weight": 3
         },
     }
+    context.SENSITIVITY = 0.7  # higher = more orders
 
     context.errors = []
 
@@ -167,7 +168,7 @@ def _handle_data(context, data):
     portfolio_value = asset_value + cash
     percent_asset = asset_value / portfolio_value
 
-    # === weighted sum forces of all suggestions
+    # === weighted avg forces of all suggestions
     # all forces should be bounded [-1, 1]
     weights = []
     forces_arry = []
@@ -180,6 +181,7 @@ def _handle_data(context, data):
         forces[key] = raw_force  # TODO: should this be * weight
         weights.append(context.indicators[key]["weight"])
     net_force = numpy.average(forces_arry, weights=weights)
+    net_force *= context.SENSITIVITY*len(forces_arry)
     amount_to_buy = net_force * context.MAX_TRADE  # portfolio_value / price
 
     if context.MIN_TRADE < abs(amount_to_buy):
@@ -326,19 +328,18 @@ def handle_data(context, data):
         order_target_percent(
             context.asset, context.TARGET_POSITION_PERCENT/100
         )
-    else:
-        # log.info('handling bar {}'.format(data.current_dt))
-        # try:
-        _handle_data(context, data)
-        # except Exception as e:
-        #     log.warn('aborting the bar on error {}'.format(e))
-        #     context.errors.append(e)
-        # log.info('completed bar {}, total execution errors {}'.format(
-        #     data.current_dt,
-        #     len(context.errors)
-        # ))
-        # if len(context.errors) > 0:
-        #     log.info('the errors:\n{}'.format(context.errors))
+    # log.info('handling bar {}'.format(data.current_dt))
+    # try:
+    _handle_data(context, data)
+    # except Exception as e:
+    #     log.warn('aborting the bar on error {}'.format(e))
+    #     context.errors.append(e)
+    # log.info('completed bar {}, total execution errors {}'.format(
+    #     data.current_dt,
+    #     len(context.errors)
+    # ))
+    # if len(context.errors) > 0:
+    #     log.info('the errors:\n{}'.format(context.errors))
 
 
 if __name__ == '__main__':
