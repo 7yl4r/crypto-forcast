@@ -1,7 +1,3 @@
-import math
-from itertools import repeat
-from functools import reduce
-
 from logbook import Logger
 from catalyst.api import order
 # from catalyst.api import order_target_percent
@@ -33,11 +29,22 @@ def initialize(context):
     context.SLIPPAGE_ALLOWED = 0.02  # [%]
 
     context.TARGET_POSITION_PERCENT = 50.0
+    # # === TODO: set initial amount to target percent
+    # cash = context.portfolio.cash
+    # coins_value = cash * context.TARGET_POSITION_PERCENT / 100
+    # # price = data.current(context.asset, 'price')
+    # # price = context.asset.price
+    # price = 28.0  # TODO: get this
+    # # n coins * BTC/coin = asset_value (in BTC)
+    # n_coins = coins_value / price
+    # context.portfolio.positions[context.asset].amount = n_coins
+    # context.portfolio.cash -= coins_value
+    # # portfolio_value = coins_value + cash
 
-    # NOTE: I don't kwow what these are and what they do:
+    # NOTE: I don't know what these are and what they do:
     context.PROFIT_TARGET = 0.1
 
-    # TODO: declare predictors like this (?):
+    # declare predictors
     context.indicators = {
         "rsi_05": {
             "fn": FlexyIndicator(
@@ -67,7 +74,7 @@ def initialize(context):
             "fn": FlexyIndicator(
                 fn=_get_centering_force
             ),
-            "weight": 2
+            "weight": 4
         }
     }
 
@@ -77,7 +84,6 @@ def initialize(context):
     # currently supported by Catalyst is 1/1000th of a full coin. Use this
     # constant to scale the price of up to that of a full coin if desired.
     context.TICK_SIZE = 1000.0
-
     pass
 
 
@@ -146,8 +152,8 @@ def _handle_data(context, data):
     net_force = numpy.average(forces_arry, weights=weights)
     amount_to_buy = net_force * context.MAX_TRADE  # portfolio_value / price
 
-    print("netforce: " + str(net_force))
     if context.MIN_TRADE < abs(amount_to_buy):
+        print("netforce: " + str(net_force))
         print("\tsubforces: ")
         for i, name in enumerate(names):
             print("\t\t{: >9s}:{:d}(x){:+f}".format(

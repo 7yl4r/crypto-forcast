@@ -193,6 +193,7 @@ def analyze(context, perf):
     )
     force_vars = {
         'amount_to_buy': _data_arry("amount_to_buy", perf),
+        'price': _data_arry("price", perf),
         'net_force': _data_arry("net_force", perf),
     }
     forces = list(perf.loc[:, ["forces"]]["forces"].values)
