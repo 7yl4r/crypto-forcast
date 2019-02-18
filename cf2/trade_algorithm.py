@@ -1,6 +1,6 @@
 from logbook import Logger
 from catalyst.api import order
-# from catalyst.api import order_target_percent
+from catalyst.api import order_target_percent
 from catalyst.api import symbol
 from catalyst.api import record
 from catalyst.api import get_environment
@@ -20,6 +20,7 @@ def initialize(context):
     log.info('initializing algo')
     context.ASSET_NAME = 'eth_btc'
     context.asset = symbol(context.ASSET_NAME)
+    context.i = 0
     # === alrgorithm calculation settings
     # === buy/sell order settings
     # TODO: scale these according to portfolio balance
@@ -29,19 +30,8 @@ def initialize(context):
 
     context.TARGET_POSITION_PERCENT = 50.0
     context.MAX_TARGET_DEVIATION = 40.0
-    # # === TODO: set initial amount to target percent
-    # cash = context.portfolio.cash
-    # coins_value = cash * context.TARGET_POSITION_PERCENT / 100
-    # # price = data.current(context.asset, 'price')
-    # # price = context.asset.price
-    # price = 28.0  # TODO: get this
-    # # n coins * BTC/coin = asset_value (in BTC)
-    # n_coins = coins_value / price
-    # context.portfolio.positions[context.asset].amount = n_coins
-    # context.portfolio.cash -= coins_value
-    # # portfolio_value = coins_value + cash
 
-    # NOTE: I don't know what these are and what they do:
+    # NOTE: I don't know what PROFIT_TARGET is
     context.PROFIT_TARGET = 0.1
 
     # declare predictors
@@ -331,18 +321,24 @@ def _hand_data_dumb(context, data):
 
 
 def handle_data(context, data):
-    # log.info('handling bar {}'.format(data.current_dt))
-    # try:
-    _handle_data(context, data)
-    # except Exception as e:
-    #     log.warn('aborting the bar on error {}'.format(e))
-    #     context.errors.append(e)
-    # log.info('completed bar {}, total execution errors {}'.format(
-    #     data.current_dt,
-    #     len(context.errors)
-    # ))
-    # if len(context.errors) > 0:
-    #     log.info('the errors:\n{}'.format(context.errors))
+    context.i += 1
+    if context.i == 1:  # use 1st iteration to initialize to target %
+        order_target_percent(
+            context.asset, context.TARGET_POSITION_PERCENT/100
+        )
+    else:
+        # log.info('handling bar {}'.format(data.current_dt))
+        # try:
+        _handle_data(context, data)
+        # except Exception as e:
+        #     log.warn('aborting the bar on error {}'.format(e))
+        #     context.errors.append(e)
+        # log.info('completed bar {}, total execution errors {}'.format(
+        #     data.current_dt,
+        #     len(context.errors)
+        # ))
+        # if len(context.errors) > 0:
+        #     log.info('the errors:\n{}'.format(context.errors))
 
 
 if __name__ == '__main__':
