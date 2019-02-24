@@ -14,7 +14,7 @@ from plo7y.ts_compare.horizon_data_transformers \
     import MeanCenteredDataTransformer
 
 DPI = None  # 100
-PLT_SIZE = (9, 5)
+PLT_SIZE = (10, 6)
 
 
 def add_plt(perf_data, rows, cols, n, varname):
@@ -251,6 +251,34 @@ def analyze(context, perf):
             'net_force',
         ]
     )
+    buy_vs_sell_dists(context)
+
+
+def buy_vs_sell_dists(context):
+    plt.clf()
+    cols = 1
+    rows = 2
+    lower = min(min(context.buys), min(context.sells))
+    upper = max(max(context.buys), max(context.sells))
+    ax_n = plt.subplot(rows, cols, 1)
+    pd.DataFrame(context.buys).plot.hist(
+        ax=ax_n,
+        # label=vname,
+        # range=(0, 100),
+    )
+    plt.ylabel('buys')
+    plt.xlim(lower, upper)
+
+    ax_n = plt.subplot(rows, cols, 2)
+    pd.DataFrame(context.sells).plot.hist(
+        ax=ax_n,
+        # label=vname,
+        # range=(0, 100),
+    )
+    plt.ylabel('sells')
+    plt.xlim(lower, upper)
+
+    plt.savefig("figures/sells_v_buys.png", bbox_inches='tight')
 
 
 def distribution_check(perf_data, vnames):
