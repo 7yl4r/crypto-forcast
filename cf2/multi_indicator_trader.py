@@ -3,14 +3,15 @@ from catalyst.api import order
 from catalyst.api import order_target_percent
 from catalyst.api import symbol
 from catalyst.api import record
-from catalyst.api import get_environment
 from catalyst.utils.run_algo import run_algorithm
-import talib
 import pandas as pd
 import numpy
 
 from analyze.custom import analyze
 from FlexyIndicator import FlexyIndicator
+from indicators.mavg import get_mavg
+from indicators.rsi import get_rsi
+from indicators.centering import get_centering_force
 
 ALGO_NAMESPACE = 'buy_the_dip_live'
 log = Logger('buy low sell high')
@@ -40,7 +41,7 @@ def initialize(context):
     context.indicators = {
         "rsi_03": {
             "fn": FlexyIndicator(
-                fn=_get_rsi,
+                fn=get_rsi,
                 fn_kwargs={"period": 3},
                 a_p_std=34.13, a_p_mean=50
             ),
@@ -48,7 +49,7 @@ def initialize(context):
         },
         "rsi_07": {
             "fn": FlexyIndicator(
-                fn=_get_rsi,
+                fn=get_rsi,
                 fn_kwargs={"period": 7},
                 a_p_std=34.13, a_p_mean=50
             ),
@@ -56,7 +57,7 @@ def initialize(context):
         },
         "rsi_15": {
             "fn": FlexyIndicator(
-                fn=_get_rsi,
+                fn=get_rsi,
                 fn_kwargs={"period": 15},
                 a_p_std=34.13, a_p_mean=50
             ),
@@ -64,7 +65,7 @@ def initialize(context):
         },
         "rsi_30": {
             "fn": FlexyIndicator(
-                fn=_get_rsi,
+                fn=get_rsi,
                 fn_kwargs={"period": 30},
                 a_p_std=34.13, a_p_mean=50
             ),
@@ -72,7 +73,7 @@ def initialize(context):
         },
         "rsi_60": {
             "fn": FlexyIndicator(
-                fn=_get_rsi,
+                fn=get_rsi,
                 fn_kwargs={"period": 60},
                 a_p_std=34.13, a_p_mean=50
             ),
@@ -80,7 +81,7 @@ def initialize(context):
         },
         "rsi_360": {
             "fn": FlexyIndicator(
-                fn=_get_rsi,
+                fn=get_rsi,
                 fn_kwargs={"period": 360},
                 a_p_std=34.13, a_p_mean=50
             ),
@@ -88,7 +89,7 @@ def initialize(context):
         },
         "rsi_720": {
             "fn": FlexyIndicator(
-                fn=_get_rsi,
+                fn=get_rsi,
                 fn_kwargs={"period": 720},
                 a_p_std=34.13, a_p_mean=50
             ),
@@ -96,7 +97,7 @@ def initialize(context):
         },
         "rsi_1440": {
             "fn": FlexyIndicator(
-                fn=_get_rsi,
+                fn=get_rsi,
                 fn_kwargs={"period": 1440},
                 a_p_std=34.13, a_p_mean=50
             ),
@@ -104,55 +105,55 @@ def initialize(context):
         },
         "centering": {
             "fn": FlexyIndicator(
-                fn=_get_centering_force,
+                fn=get_centering_force,
             ),
             "weight": 1
         },
         "mavg_05": {
             "fn": FlexyIndicator(
-                fn=_get_mavg,
+                fn=get_mavg,
                 fn_kwargs={"window": 5},
             ),
             "weight": 1
         },
         "mavg_15": {
             "fn": FlexyIndicator(
-                fn=_get_mavg,
+                fn=get_mavg,
                 fn_kwargs={"window": 15},
             ),
             "weight": 1
         },
         "mavg_30": {
             "fn": FlexyIndicator(
-                fn=_get_mavg,
+                fn=get_mavg,
                 fn_kwargs={"window": 30},
             ),
             "weight": 1
         },
         "mavg_60": {
             "fn": FlexyIndicator(
-                fn=_get_mavg,
+                fn=get_mavg,
                 fn_kwargs={"window": 60},
             ),
             "weight": 1
         },
         "mavg_360": {
             "fn": FlexyIndicator(
-                fn=_get_mavg,
+                fn=get_mavg,
                 fn_kwargs={"window": 360},
             ),
             "weight": 1
         },
         "mavg_720": {
             "fn": FlexyIndicator(
-                fn=_get_mavg,
+                fn=get_mavg,
                 fn_kwargs={"window": 720},
             ),
             "weight": 1
         },
         "mavg_1440": {
             "fn": FlexyIndicator(
-                fn=_get_mavg,
+                fn=get_mavg,
                 fn_kwargs={"window": 1440},
             ),
             "weight": 1
@@ -166,72 +167,6 @@ def initialize(context):
     # currently supported by Catalyst is 1/1000th of a full coin. Use this
     # constant to scale the price of up to that of a full coin if desired.
     context.TICK_SIZE = 1000.0
-    pass
-
-
-def _get_mavg(context, data, window=10):
-    freq = get_environment('data_frequency')
-    assert freq == 'minute'
-
-    # Compute moving averages calling data.history() for each
-    # moving average with the appropriate parameters. We choose to use
-    # minute bars for this simulation -> freq="1m"
-    # Returns a pandas dataframe.
-    df = data.history(
-        context.asset,
-        'price',
-        bar_count=window,
-        frequency="1m",  # "1T",
-    )
-    mavg = df.mean()
-    mstd = df.std()
-    # price = data.current(context.asset, 'price')
-    price = df[-1]  # data.current(context.asset, 'price')
-    zscore = (mavg - price) / mstd
-    # print("{} - {} = {}".format(price, mavg, diff))
-    return zscore/8.0
-
-
-def _get_rsi(context, data, period):
-    # === get RSI suggestion
-    # RSI > 50 means buy
-    # RSI < 50 means sell
-    # RSI pressure is > 0 if buy suggested, < 0 if sell suggested
-    # bounded [0, 100]
-    freq = get_environment('data_frequency')
-    if freq == 'daily':
-        rsi_freq = '1D'
-    elif freq == 'minute':
-        rsi_freq = '1m'
-    else:
-        raise ValueError('unknown data_freq "{}"'.format(freq))
-    prices = data.history(
-        context.asset,
-        fields='price',
-        bar_count=period*3,  # TODO: what value should this be?
-        frequency=rsi_freq
-    )
-    return talib.RSI(prices.values, timeperiod=period)[-1]
-
-
-def _get_centering_force(context, data):
-    price = data.current(context.asset, 'price')
-    cash = context.portfolio.cash
-
-    n_coins = context.portfolio.positions[context.asset].amount
-    # n coins * BTC/coin = asset_value (in BTC)
-    asset_value = n_coins * price
-    portfolio_value = asset_value + cash
-
-    percent_asset = asset_value / portfolio_value
-    # === center-forcing towards target position percent
-    position_distance = context.TARGET_POSITION_PERCENT - percent_asset*100
-    # max_acceptable_distance = min(
-    #     context.TARGET_POSITION_PERCENT,
-    #     100.0 - context.TARGET_POSITION_PERCENT
-    # ) / 100.0
-    max_acceptable_distance = context.MAX_TARGET_DEVIATION
-    return position_distance / max_acceptable_distance
 
 
 def _handle_data(context, data):
