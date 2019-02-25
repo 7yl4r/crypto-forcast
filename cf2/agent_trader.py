@@ -28,7 +28,7 @@ def initialize(context):
     # === alrgorithm calculation settings
     # === buy/sell order settings
     # TODO: scale these according to portfolio balance
-    context.MIN_TRADE = 0.001  # [eth]
+    context.MIN_TRADE = 0.1  # [eth]
     context.MAX_TRADE = 1.0  # [eth]
     context.SLIPPAGE_ALLOWED = 0.01  # [% of current price]
 
@@ -129,6 +129,7 @@ def _handle_data(context, data):
         context.MIN_TRADE < amount_to_buy and
         amt_below_avg*2 > profit_target
     ):
+        amount_to_buy = round(amount_to_buy, 1)
         # TODO:
         # * limit for buying when profit-target is possible
         # * adjust profit-target larger as funding available decreases
