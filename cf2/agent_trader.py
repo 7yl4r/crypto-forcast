@@ -2,19 +2,19 @@ from logbook import Logger
 from catalyst.api import order_target_percent
 from catalyst.api import symbol
 from catalyst.api import record
+from catalyst.api import order
 from catalyst.utils.run_algo import run_algorithm
 import pandas as pd
 import numpy
 
+from indicators.centering import get_centering_force
+from indicators.mavg import get_mavg
 from analyze.custom import analyze
 from FlexyIndicator import FlexyIndicator
-from util.try_buy import try_buy
-from indicators.mavg import get_mavg
-from indicators.rsi import get_rsi
-from indicators.centering import get_centering_force
 
-ALGO_NAMESPACE = 'buy_the_dip_live'
-log = Logger('buy low sell high')
+ALGO_NAMESPACE = 'agent_based_trader'
+log = Logger('Multiple Agent-Based Trading Alg')
+WINDOW = 30
 
 
 def initialize(context):
@@ -24,82 +24,33 @@ def initialize(context):
     context.i = 0
     context.buys = []
     context.sells = []
+    context.hidden_sells = []
     # === alrgorithm calculation settings
     # === buy/sell order settings
     # TODO: scale these according to portfolio balance
-    context.MIN_TRADE = 0.1
-    context.MAX_TRADE = 1.0
-    context.SLIPPAGE_ALLOWED = 0.01  # [%]
+    context.MIN_TRADE = 0.001  # [eth]
+    context.MAX_TRADE = 1.0  # [eth]
+    context.SLIPPAGE_ALLOWED = 0.01  # [% of current price]
 
     context.TARGET_POSITION_PERCENT = 50.0
     context.MAX_TARGET_DEVIATION = 50.0
 
-    # NOTE: I don't know what PROFIT_TARGET is
-    context.PROFIT_TARGET = 0.1
+    context.PROFIT_TARGET = 0.01  # [% of current price]
 
     # declare predictors
     context.indicators = {
-        "rsi_03": {
+        # "rsi_"+str(WINDOW): {
+        #     "fn": FlexyIndicator(
+        #         fn=get_rsi,
+        #         fn_kwargs={"period": WINDOW},
+        #         a_p_std=34.13, a_p_mean=50
+        #     ),
+        #     "weight": 1
+        # },
+        "mva_"+str(WINDOW): {
             "fn": FlexyIndicator(
-                fn=get_rsi,
-                fn_kwargs={"period": 3},
-                a_p_std=34.13, a_p_mean=50
-            ),
-            "weight": 1
-        },
-        "rsi_07": {
-            "fn": FlexyIndicator(
-                fn=get_rsi,
-                fn_kwargs={"period": 7},
-                a_p_std=34.13, a_p_mean=50
-            ),
-            "weight": 1
-        },
-        "rsi_15": {
-            "fn": FlexyIndicator(
-                fn=get_rsi,
-                fn_kwargs={"period": 15},
-                a_p_std=34.13, a_p_mean=50
-            ),
-            "weight": 1
-        },
-        "rsi_30": {
-            "fn": FlexyIndicator(
-                fn=get_rsi,
-                fn_kwargs={"period": 30},
-                a_p_std=34.13, a_p_mean=50
-            ),
-            "weight": 1
-        },
-        "rsi_60": {
-            "fn": FlexyIndicator(
-                fn=get_rsi,
-                fn_kwargs={"period": 60},
-                a_p_std=34.13, a_p_mean=50
-            ),
-            "weight": 1
-        },
-        "rsi_360": {
-            "fn": FlexyIndicator(
-                fn=get_rsi,
-                fn_kwargs={"period": 360},
-                a_p_std=34.13, a_p_mean=50
-            ),
-            "weight": 1
-        },
-        "rsi_720": {
-            "fn": FlexyIndicator(
-                fn=get_rsi,
-                fn_kwargs={"period": 720},
-                a_p_std=34.13, a_p_mean=50
-            ),
-            "weight": 1
-        },
-        "rsi_1440": {
-            "fn": FlexyIndicator(
-                fn=get_rsi,
-                fn_kwargs={"period": 1440},
-                a_p_std=34.13, a_p_mean=50
+                fn=get_mavg,
+                fn_kwargs={"window": WINDOW},
             ),
             "weight": 1
         },
@@ -109,57 +60,7 @@ def initialize(context):
             ),
             "weight": 1
         },
-        "mavg_05": {
-            "fn": FlexyIndicator(
-                fn=get_mavg,
-                fn_kwargs={"window": 5},
-            ),
-            "weight": 1
-        },
-        "mavg_15": {
-            "fn": FlexyIndicator(
-                fn=get_mavg,
-                fn_kwargs={"window": 15},
-            ),
-            "weight": 1
-        },
-        "mavg_30": {
-            "fn": FlexyIndicator(
-                fn=get_mavg,
-                fn_kwargs={"window": 30},
-            ),
-            "weight": 1
-        },
-        "mavg_60": {
-            "fn": FlexyIndicator(
-                fn=get_mavg,
-                fn_kwargs={"window": 60},
-            ),
-            "weight": 1
-        },
-        "mavg_360": {
-            "fn": FlexyIndicator(
-                fn=get_mavg,
-                fn_kwargs={"window": 360},
-            ),
-            "weight": 1
-        },
-        "mavg_720": {
-            "fn": FlexyIndicator(
-                fn=get_mavg,
-                fn_kwargs={"window": 720},
-            ),
-            "weight": 1
-        },
-        "mavg_1440": {
-            "fn": FlexyIndicator(
-                fn=get_mavg,
-                fn_kwargs={"window": 1440},
-            ),
-            "weight": 1
-        },
     }
-    context.SENSITIVITY = 0.2  # higher = more orders
 
     context.errors = []
 
@@ -190,8 +91,7 @@ def _handle_data(context, data):
         forces[key] = raw_force  # TODO: should this be * weight
         weights.append(context.indicators[key]["weight"])
     net_force = numpy.average(forces_arry, weights=weights)
-    net_force *= context.SENSITIVITY*len(forces_arry)
-    amount_to_buy = net_force * context.MAX_TRADE  # portfolio_value / price
+    amount_to_buy = min(net_force * cash / price, context.MAX_TRADE)
     # log.info('base currency available: {cash}'.format(cash=cash))
     # print("netforce: " + str(net_force))
     # print("\tsubforces: ")
@@ -200,23 +100,90 @@ def _handle_data(context, data):
     #         name, weights[i], forces[name]
     #     ))
 
-    # if buy:
-    # is_sell = False
-    # is_buy = False
-    if context.MIN_TRADE < amount_to_buy:
-        try_buy(context, data, amount_to_buy)
-    elif -context.MIN_TRADE > amount_to_buy:  # if sell
-        try_buy(context, data, amount_to_buy)
-    else:
+    # * when buying, set sell limit @ z-score*-1. ie the positive z-score
+    #   opposite from where you bought
+    df = data.history(
+        context.asset,
+        'price',
+        bar_count=WINDOW,
+        frequency="1m",  # "1T",
+    )
+    mavg = df.mean()
+    amt_below_avg = mavg - price
+    # print("{}eth below mavg".format(amt_below_avg))
+    profit_target = context.PROFIT_TARGET * price  # in eth
+    # wait for open orders to fill:
+    if context.i == 1:  # use 1st iteration to initialize to target %
+        order_target_percent(
+            context.asset, context.TARGET_POSITION_PERCENT/100
+        )
         amount_to_buy = 0
-        pass
-        # print("meh")
-    # # TODO: wait for open orders to fill:
-    # # orders = context.blotter.open_orders
-    # # if orders:
-    # #     log.info('skipping bar until all open orders execute')
-    # #     return
-    #
+    # elif context.i < WINDOW:  # wait
+    #     amount_to_buy = 0
+    elif len(context.blotter.open_orders) > 0:
+        # log.info('skipping bar until all open orders execute')
+        # print(context.blotter.open_orders)
+        amount_to_buy = 0
+        # return
+    elif (  # buy
+        context.MIN_TRADE < amount_to_buy and
+        amt_below_avg*2 > profit_target
+    ):
+        # TODO:
+        # * limit for buying when profit-target is possible
+        # * adjust profit-target larger as funding available decreases
+
+        if price * amount_to_buy > context.portfolio.cash:
+            print('not enough base currency buy')
+        else:
+            buy_price = price * (1 + context.SLIPPAGE_ALLOWED)
+            order(
+                asset=context.asset,
+                amount=amount_to_buy,
+                limit_price=buy_price
+            )
+            context.buys.append(buy_price)
+
+            # immediately set sell order at opposing z-score
+            # hidden sells activated when price approaches sell_price
+            sell_price = mavg + amt_below_avg
+            context.hidden_sells.append(
+                [sell_price, amount_to_buy]
+            )
+            # sorted by price
+            context.hidden_sells.sort(
+                key=lambda x: x[0]
+            )
+
+            print('buy {:0.4f}{} @{} to sell @{}'.format(
+                amount_to_buy, context.ASSET_NAME.split('_')[0],
+                buy_price, sell_price
+            ))
+    elif(
+        len(context.hidden_sells) > 0 and
+        price > context.hidden_sells[0][0]
+    ):
+        sell_price, amount_to_sell = context.hidden_sells.pop(0)
+        order(
+            asset=context.asset,
+            amount=-amount_to_sell,
+            limit_price=sell_price
+        )
+        context.sells.append(sell_price)
+        print('selling {:0.4f}{}'.format(
+            amount_to_sell, context.ASSET_NAME.split('_')[0],
+        ))
+    else:
+        # print((
+        #     "no sells | no buys\n" +
+        #     "buy {} !> {}\t&&\n" +
+        #     "profit {} !> {}"
+        # ).format(
+        #     amount_to_buy, context.MIN_TRADE,
+        #     amt_below_avg*2, profit_target
+        # ))
+        amount_to_buy = 0
+
     # # TODO: what is all this about?
     # #
     # is_buy = False
@@ -275,30 +242,8 @@ def _handle_data(context, data):
     )
 
 
-def _hand_data_dumb(context, data):
-    """Stupid always-buy for testing purposes only"""
-    price = data.current(context.asset, 'price')
-    cash = context.portfolio.cash
-    try_buy(
-        context, data, context.MIN_TRADE,
-    )
-    record(
-        price=price,
-        cash=cash,
-        volume=data.current(context.asset, 'volume'),
-        starting_cash=context.portfolio.starting_cash,
-        leverage=context.account.leverage,
-        positions_asset=context.portfolio.positions[context.asset].amount,
-    )
-
-
 def handle_data(context, data):
     context.i += 1
-    if context.i == 1:  # use 1st iteration to initialize to target %
-        order_target_percent(
-            context.asset, context.TARGET_POSITION_PERCENT/100
-        )
-    # TODO: else?
     # log.info('handling bar {}'.format(data.current_dt))
     # try:
     _handle_data(context, data)
@@ -318,14 +263,14 @@ if __name__ == '__main__':
     # t0 = pd.to_datetime('2018-06-01', utc=True)
     # tf = pd.to_datetime('2018-12-30', utc=True)
     # === long neutral hill
-    # t0 = pd.to_datetime('2018-01-08', utc=True)
-    # tf = pd.to_datetime('2018-03-13', utc=True)
+    t0 = pd.to_datetime('2018-01-08', utc=True)
+    tf = pd.to_datetime('2018-03-13', utc=True)
     # === med bull
     # t0 = pd.to_datetime('2018-12-21', utc=True)
     # tf = pd.to_datetime('2018-12-30', utc=True)
     # === short neutral
-    t0 = pd.to_datetime('2018-12-21', utc=True)
-    tf = pd.to_datetime('2018-12-21', utc=True)
+    # t0 = pd.to_datetime('2018-12-21', utc=True)
+    # tf = pd.to_datetime('2018-12-21', utc=True)
 
     run_algorithm(
         live=False,  # set this to true to lose all your money

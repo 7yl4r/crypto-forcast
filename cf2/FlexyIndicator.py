@@ -51,3 +51,10 @@ class FlexyIndicator(object):
         # return std_score/(4)  # rough linear approx
         return 2.0*st.norm.cdf(std_score)-1.0
         # TODO: cut off out of bounds [-1, 1]
+
+    def invert_value(self, value):
+        """
+        Get value on opposite side of gaussian curve by
+        flipping value across the average.
+        """
+        return self.mean - (value - self.mean)
