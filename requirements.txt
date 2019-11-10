@@ -22,7 +22,7 @@ incremental==17.5.0
 jsonschema==2.6.0
 kiwisolver==1.0.1
 lockfile==0.12.2
-luigi==2.7.5
+luigi==2.8.0
 lxml==4.2.1
 matplotlib==2.2.2
 numpy==1.14.3
