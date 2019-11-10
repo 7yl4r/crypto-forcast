@@ -1,3 +1,9 @@
+"""
+usage : python ./cf2/agent_trader.py
+
+to explore the result see analyze.custom.analyze in analyze/custom.py
+"""
+
 from logbook import Logger
 from catalyst.api import order_target_percent
 from catalyst.api import symbol
@@ -9,12 +15,13 @@ import numpy
 
 from indicators.centering import get_centering_force
 from indicators.mavg import get_mavg
+from indicators.rsi import get_rsi
 from analyze.custom import analyze
 from FlexyIndicator import FlexyIndicator
 
 ALGO_NAMESPACE = 'agent_based_trader'
 log = Logger('Multiple Agent-Based Trading Alg')
-WINDOW = 30
+WINDOW = 360
 
 
 def initialize(context):
@@ -30,37 +37,44 @@ def initialize(context):
     # TODO: scale these according to portfolio balance
     context.MIN_TRADE = 0.1  # [eth]
     context.MAX_TRADE = 1.0  # [eth]
-    context.SLIPPAGE_ALLOWED = 0.01  # [% of current price]
+    context.SLIPPAGE_ALLOWED = 0.02  # [% of current price]
 
-    context.TARGET_POSITION_PERCENT = 50.0
-    context.MAX_TARGET_DEVIATION = 50.0
+    context.TARGET_POSITION_PERCENT = 40.0
+    context.MAX_TARGET_DEVIATION = 40.0
 
-    context.PROFIT_TARGET = 0.01  # [% of current price]
+    context.PROFIT_TARGET = 0.001  # [% of current price]
+    context.UNDER_ESTIMATION = 0.30  # % sold below statistical value
 
     # declare predictors
     context.indicators = {
-        # "rsi_"+str(WINDOW): {
-        #     "fn": FlexyIndicator(
-        #         fn=get_rsi,
-        #         fn_kwargs={"period": WINDOW},
-        #         a_p_std=34.13, a_p_mean=50
-        #     ),
-        #     "weight": 1
-        # },
-        "mva_"+str(WINDOW): {
-            "fn": FlexyIndicator(
-                fn=get_mavg,
-                fn_kwargs={"window": WINDOW},
-            ),
-            "weight": 1
-        },
         "centering": {
             "fn": FlexyIndicator(
                 fn=get_centering_force,
             ),
-            "weight": 1
+            "weight": 4
         },
     }
+    for n in [0.5, 1, 2]:
+        if n == 1:
+            weight = 4
+        else:
+            weight = 1
+        w = round(WINDOW*n)
+        context.indicators["rsi_"+str(w)] = {
+            "fn": FlexyIndicator(
+                fn=get_rsi,
+                fn_kwargs={"period": w},
+                a_p_std=34.13, a_p_mean=50
+            ),
+            "weight": weight/2
+        }
+        context.indicators["mva_"+str(w)] = {
+            "fn": FlexyIndicator(
+                fn=get_mavg,
+                fn_kwargs={"window": w},
+            ),
+            "weight": weight
+        }
 
     context.errors = []
 
@@ -112,6 +126,9 @@ def _handle_data(context, data):
     amt_below_avg = mavg - price
     # print("{}eth below mavg".format(amt_below_avg))
     profit_target = context.PROFIT_TARGET * price  # in eth
+
+    buy_price = price * (1 + context.SLIPPAGE_ALLOWED)
+    sell_price = mavg + amt_below_avg * (1 - context.UNDER_ESTIMATION)
     # wait for open orders to fill:
     if context.i == 1:  # use 1st iteration to initialize to target %
         order_target_percent(
@@ -127,7 +144,7 @@ def _handle_data(context, data):
         # return
     elif (  # buy
         context.MIN_TRADE < amount_to_buy and
-        amt_below_avg*2 > profit_target
+        (sell_price - buy_price) > profit_target
     ):
         amount_to_buy = round(amount_to_buy, 1)
         # TODO:
@@ -137,7 +154,6 @@ def _handle_data(context, data):
         if price * amount_to_buy > context.portfolio.cash:
             print('not enough base currency buy')
         else:
-            buy_price = price * (1 + context.SLIPPAGE_ALLOWED)
             order(
                 asset=context.asset,
                 amount=amount_to_buy,
@@ -147,7 +163,6 @@ def _handle_data(context, data):
 
             # immediately set sell order at opposing z-score
             # hidden sells activated when price approaches sell_price
-            sell_price = mavg + amt_below_avg
             context.hidden_sells.append(
                 [sell_price, amount_to_buy]
             )

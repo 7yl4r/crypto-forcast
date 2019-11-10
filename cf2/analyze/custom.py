@@ -1,3 +1,9 @@
+"""
+analyzes the result of a catalyst backtest.
+
+outputs a lot of figures to the ./figures/ dir
+"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
