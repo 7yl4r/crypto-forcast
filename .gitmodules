@@ -2,6 +2,6 @@
 	path = CryptoForecast/lib/horizongraph
 	url = https://github.com/thomaskern/horizongraph_matplotlib
 [submodule "cf2/sub/plo7y"]
-	path = cf2/sub/plo7y
+	path = cf2/plo7y
 	url = git@github.com:7yl4r/plo7y.git
 	branch = master
