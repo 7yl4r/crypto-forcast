@@ -43,7 +43,7 @@ pytrends==4.4.0
 pytz==2018.4
 query-string==1.0.2
 regex==2018.2.21
-requests==2.18.4
+requests==2.20.0
 scipy==1.1.0
 selenium==3.141.0
 service-identity==17.0.0
