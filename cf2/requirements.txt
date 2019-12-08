@@ -1,0 +1,2 @@
+catalyst @ git+https://github.com/enigmampc/catalyst@master#catalyst
+plo7y @ git+https://github.com/7yl4r/plo7y@master#plo7y
