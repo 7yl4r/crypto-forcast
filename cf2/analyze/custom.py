@@ -11,12 +11,12 @@ import pandas as pd
 from catalyst.exchange.utils.stats_utils import extract_transactions
 # from catalyst.api import get_environment
 
-from plo7y.ts_compare.horizongraph import Horizon
-from plo7y.ts_compare.horizon_data_transformers \
+from plo7y.plotters.ts_many_horizongraph import Horizon
+from plo7y.plotters.horizon_data_transformers \
     import TimeZeroCenteredDataTransformer
-from plo7y.ts_compare.horizon_data_transformers \
+from plo7y.plotters.horizon_data_transformers \
     import SharedAxisDataTransformer
-from plo7y.ts_compare.horizon_data_transformers \
+from plo7y.plotters.horizon_data_transformers \
     import MeanCenteredDataTransformer
 
 DPI = None  # 100
