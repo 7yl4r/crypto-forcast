@@ -23,7 +23,7 @@ jsonschema==2.6.0
 kiwisolver==1.0.1
 lockfile==0.12.2
 luigi==2.7.5
-lxml==4.2.1
+lxml==4.9.1
 matplotlib==2.2.2
 numpy==1.14.3
 pandas==0.23.0
